@@ -1,4 +1,4 @@
-# WorkTask
+# SpringBoot_influxDB
 SpringBoot + influxDB + grafana
 
 <h3>Data in InfluxDB</h3>
