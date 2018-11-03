@@ -1,15 +1,13 @@
 package com.dimamon.Dao;
 
-import com.dimamon.Entity.Student;
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
-
-import org.influxdb.*;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
-import org.influxdb.dto.Query;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -17,7 +15,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @Qualifier("Influx")
-public class InfluxDBTool{
+public class InfluxDBTool {
 
     private InfluxDB influxDB;
     private final static String USERNAME = "root";
@@ -28,11 +26,11 @@ public class InfluxDBTool{
     //SetUp
     {
         this.influxDB = InfluxDBFactory
-                .connect("http://localhost:"+UDP_PORT,USERNAME,PASSWORD);
+                .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);
     }
 
     //Измерить показатели, method - вызываемый метод
-    public void measure(int id, String method){
+    public void measure(int id, String method) {
 
         BatchPoints batchPoints = BatchPoints
                 .database(DB_NAME)
@@ -53,7 +51,7 @@ public class InfluxDBTool{
     }
 
     //Запись измерений в базу
-    public void write(BatchPoints batchPoints){
+    private void write(BatchPoints batchPoints) {
         influxDB.write(batchPoints);
     }
 

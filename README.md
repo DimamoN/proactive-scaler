@@ -1,6 +1,18 @@
 # SpringBoot_influxDB
 SpringBoot + influxDB + grafana
 
+* start influx db locally
+* create database *studentsTest*
+```bash
+$ influx
+> create database studentsTest
+```
+
+* queries for grafana:
+```
+SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(60s) fill(null)
+```
+
 <h3>Data in InfluxDB</h3>
 <img src="https://pp.vk.me/c638331/v638331767/bfde/QnsfkyVDEGg.jpg" alt="influx" />
 
