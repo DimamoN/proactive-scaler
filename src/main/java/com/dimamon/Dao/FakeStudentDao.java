@@ -17,49 +17,46 @@ import java.util.Map;
 @Qualifier("fakeData")
 public class FakeStudentDao implements StudentDao {
 
-    private static Map<Integer,Student> students;
+    private static Map<Integer, Student> STUDENTS;
 
     //Fake data
     static {
-        students = new HashMap<Integer,Student>(){
+        STUDENTS = new HashMap<Integer, Student>() {
 
             {
-                put(1,new Student(1,"Said","Computer Science"));
-                put(2,new Student(2,"Alex","Finance"));
-                put(3,new Student(3,"Anna","Maths"));
-                put(4,new Student(4,"Tonya","Sociology"));
+                put(1, new Student(1, "Said", "Computer Science"));
+                put(2, new Student(2, "Alex", "Finance"));
+                put(3, new Student(3, "Anna", "Maths"));
+                put(4, new Student(4, "Tonya", "Sociology"));
             }
         };
     }
 
     @Override
-    public Collection<Student> getAllStudents(){
-        return this.students.values();
+    public Collection<Student> getAllStudents() {
+        return STUDENTS.values();
     }
 
     @Override
-    public Student getStudentById(int id){
-        return this.students.get(id);
+    public Student getStudentById(int id) {
+        return STUDENTS.get(id);
     }
 
     @Override
     public Student removeStudentById(int id) {
-        return this.students.remove(id);
+        return STUDENTS.remove(id);
     }
 
     @Override
-    public void updateStudent(Student student){
-
-        Student updStudent = this.students.get(student.getId());
-
+    public void updateStudent(Student student) {
+        Student updStudent = STUDENTS.get(student.getId());
         updStudent.setName(student.getName());
         updStudent.setCourse(student.getCourse());
-
-        students.replace(student.getId(), updStudent);
+        STUDENTS.replace(student.getId(), updStudent);
     }
 
     @Override
     public void insertStudent(Student student) {
-        this.students.put(student.getId(),student);
+        STUDENTS.put(student.getId(), student);
     }
 }

@@ -24,39 +24,31 @@ public class StudentService {
     @Autowired
     private InfluxDBTool influxDBTool;
 
-    public Collection<Student> getAllStudents(){
-
-        influxDBTool.measure(0,"getAll");
-
+    public Collection<Student> getAllStudents() {
+        influxDBTool.measure(0, "getAll");
         return this.studentDao.getAllStudents();
     }
 
     //Можно добавить - проверку на существование студента,
     //Если его не существует - отправить Request code - данные не доступны
-    public Student getStudentById(int id){
-        influxDBTool.measure(id,"get");
+    public Student getStudentById(int id) {
+        influxDBTool.measure(id, "get");
         return this.studentDao.getStudentById(id);
     }
 
     //Добавить Существует ли студент с таким id
     public Student removeStudentById(int id) {
-
-        influxDBTool.measure(id,"remove");
-
+        influxDBTool.measure(id, "remove");
         return this.studentDao.removeStudentById(id);
     }
 
     public void updateStudent(Student student) {
-
-        influxDBTool.measure(student.getId(),"update");
-
+        influxDBTool.measure(student.getId(), "update");
         this.studentDao.updateStudent(student);
     }
 
     public void insertStudent(Student student) {
-
-        influxDBTool.measure(student.getId(),"insert");
-
+        influxDBTool.measure(student.getId(), "insert");
         this.studentDao.insertStudent(student);
     }
 }

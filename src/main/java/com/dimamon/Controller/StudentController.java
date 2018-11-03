@@ -15,7 +15,7 @@ import java.util.Collection;
 public class StudentController {
 
     @Autowired
-    StudentService studentService;
+    private StudentService studentService;
 
     @RequestMapping(method = RequestMethod.GET)
     public Collection<Student> getAllStudents(){
