@@ -2,10 +2,10 @@
 SpringBoot + influxDB + grafana
 
 * start influx db locally
-* create database *studentsTest*
+* create database *for_grafana*
 ```bash
 $ influx
-> create database studentsTest
+> create database for_grafana
 ```
 
 * queries for grafana:

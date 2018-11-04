@@ -8,13 +8,13 @@ import java.util.Collection;
  * Created by dimamon on 11/16/16.
  */
 public interface StudentDao {
-    Collection<Student> getAllStudents();
+    Collection<Student> retrieveAll();
 
-    Student getStudentById(int id);
+    Student retrieveById(int id);
 
-    Student removeStudentById(int id);
+    Student remove(int id);
 
-    void updateStudent(Student student);
+    void update(Student student);
 
-    void insertStudent(Student student);
+    void add(Student student);
 }

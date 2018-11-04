@@ -21,37 +21,31 @@ public class InfluxDBTool {
     private final static String USERNAME = "root";
     private final static String PASSWORD = "root";
     private final static int UDP_PORT = 8086;
-    private final static String DB_NAME = "studentsTest";
+    private final static String DB_NAME = "for_grafana";
 
-    //SetUp
     {
         this.influxDB = InfluxDBFactory
                 .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);
     }
 
-    //Измерить показатели, method - вызываемый метод
-    public void measure(int id, String method) {
-
+    public void measure(int id, final String method) {
         BatchPoints batchPoints = BatchPoints
                 .database(DB_NAME)
-//                .tag("async", "true")
                 .retentionPolicy("autogen")
                 .consistency(InfluxDB.ConsistencyLevel.ALL)
                 .build();
 
-        Point point1 = Point.measurement("connection")
+        Point point = Point.measurement("connection")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("id", id)
                 .addField("method", method)
                 .build();
 
-        batchPoints.point(point1);
-
+        batchPoints.point(point);
         this.write(batchPoints);
     }
 
-    //Запись измерений в базу
-    private void write(BatchPoints batchPoints) {
+    private void write(final BatchPoints batchPoints) {
         influxDB.write(batchPoints);
     }
 

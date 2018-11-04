@@ -18,36 +18,32 @@ public class StudentService {
     @Autowired
     @Qualifier("fakeData")
     private StudentDao studentDao;
-
-    //TEST
+    
     @Autowired
     private InfluxDBTool influxDBTool;
 
-    public Collection<Student> getAllStudents() {
+    public Collection<Student> getAll() {
         influxDBTool.measure(0, "getAll");
-        return this.studentDao.getAllStudents();
+        return this.studentDao.retrieveAll();
     }
 
-    //Можно добавить - проверку на существование студента,
-    //Если его не существует - отправить Request code - данные не доступны
-    public Student getStudentById(int id) {
+    public Student getById(int id) {
         influxDBTool.measure(id, "get");
-        return this.studentDao.getStudentById(id);
+        return this.studentDao.retrieveById(id);
     }
 
-    //Добавить Существует ли студент с таким id
-    public Student removeStudentById(int id) {
+    public Student removeById(int id) {
         influxDBTool.measure(id, "remove");
-        return this.studentDao.removeStudentById(id);
+        return this.studentDao.remove(id);
     }
 
-    public void updateStudent(Student student) {
+    public void update(final Student student) {
         influxDBTool.measure(student.getId(), "update");
-        this.studentDao.updateStudent(student);
+        this.studentDao.update(student);
     }
 
-    public void insertStudent(Student student) {
+    public void add(final Student student) {
         influxDBTool.measure(student.getId(), "insert");
-        this.studentDao.insertStudent(student);
+        this.studentDao.add(student);
     }
 }

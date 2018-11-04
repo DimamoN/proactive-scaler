@@ -19,10 +19,9 @@ public class FakeStudentDao implements StudentDao {
 
     private static Map<Integer, Student> STUDENTS;
 
-    //Fake data
+    // fake data
     static {
         STUDENTS = new HashMap<Integer, Student>() {
-
             {
                 put(1, new Student(1, "Said", "Computer Science"));
                 put(2, new Student(2, "Alex", "Finance"));
@@ -33,22 +32,22 @@ public class FakeStudentDao implements StudentDao {
     }
 
     @Override
-    public Collection<Student> getAllStudents() {
+    public Collection<Student> retrieveAll() {
         return STUDENTS.values();
     }
 
     @Override
-    public Student getStudentById(int id) {
+    public Student retrieveById(int id) {
         return STUDENTS.get(id);
     }
 
     @Override
-    public Student removeStudentById(int id) {
+    public Student remove(int id) {
         return STUDENTS.remove(id);
     }
 
     @Override
-    public void updateStudent(Student student) {
+    public void update(final Student student) {
         Student updStudent = STUDENTS.get(student.getId());
         updStudent.setName(student.getName());
         updStudent.setCourse(student.getCourse());
@@ -56,7 +55,7 @@ public class FakeStudentDao implements StudentDao {
     }
 
     @Override
-    public void insertStudent(Student student) {
+    public void add(final Student student) {
         STUDENTS.put(student.getId(), student);
     }
 }

@@ -19,32 +19,28 @@ public class StudentController {
 
     @RequestMapping(method = RequestMethod.GET)
     public Collection<Student> getAllStudents(){
-        return this.studentService.getAllStudents();
+        return this.studentService.getAll();
     }
 
-    //Берем id из url и отправлеям в метод
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Student getStudentById(@PathVariable("id") int id){
-        return this.studentService.getStudentById(id);
+        return this.studentService.getById(id);
     }
 
-    //Удаление по id
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public Student removeStudentById(@PathVariable("id") int id){
-        return this.studentService.removeStudentById(id);
+        return this.studentService.removeById(id);
     }
 
     //consumes = MediaType.APPLICATION_JSON_VALUE
-    //Обновление информации, передается JSON
     @RequestMapping(method = RequestMethod.PUT)
     public void updateStudent(@RequestBody Student student) {
-        this.studentService.updateStudent(student);
+        this.studentService.update(student);
     }
 
-    //Добавить студента
     @RequestMapping(method = RequestMethod.POST)
     public void insertStudent(@RequestBody Student student) {
-        this.studentService.insertStudent(student);
+        this.studentService.add(student);
     }
 
 
