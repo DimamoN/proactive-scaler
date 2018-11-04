@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+
+  springApp:
+    container_name:
+      springApp
+    restart: unless-stopped
+    image: "dimamon/springboot_influx:1.0-SNAPSHOT"
+    ports:
+    - 8080:8080
+    depends_on:
+    - "influxdb"
+
+  influxdb:
+    container_name:
+      influxdb
+    restart: unless-stopped
+    image: "influxdb"
+    ports:
+    - 8086:8086
+    volumes:
+      - influxdb:/var/lib/influxdb
+
+volumes:
+  influxdb:
+    external:
+      name: influxdb

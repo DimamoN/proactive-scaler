@@ -25,7 +25,8 @@ public class InfluxDBTool {
 
     {
         this.influxDB = InfluxDBFactory
-                .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);
+//                .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);   // for localhost
+                .connect("http://influxdb:" + UDP_PORT, USERNAME, PASSWORD); // for docker-compose
     }
 
     public void measure(int id, final String method, double cpuLoad, long freeMemory) {

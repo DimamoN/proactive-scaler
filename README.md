@@ -1,6 +1,8 @@
 # SpringBoot_influxDB
 SpringBoot + influxDB + grafana
 
+How to run (method 1):
+
 * start influx db locally
 ```bash
 sudo docker run -p 8086:8086 \
@@ -12,6 +14,12 @@ sudo docker run -p 8086:8086 \
 ```bash
 $ influx
 > create database for_grafana
+```
+
+How to run (method 2):
+* start docker-compose
+```bash
+$ docker-compose up
 ```
 
 * queries for grafana:
