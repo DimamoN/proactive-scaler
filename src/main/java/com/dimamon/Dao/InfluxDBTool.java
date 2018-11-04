@@ -28,21 +28,24 @@ public class InfluxDBTool {
                 .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);
     }
 
-    public void measure(int id, final String method) {
-        BatchPoints batchPoints = BatchPoints
-                .database(DB_NAME)
-                .retentionPolicy("autogen")
-                .consistency(InfluxDB.ConsistencyLevel.ALL)
-                .build();
-
+    public void measure(int id, final String method, double cpuLoad) {
+        BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("connection")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("id", id)
                 .addField("method", method)
+                .addField("cpu", cpuLoad)
                 .build();
-
         batchPoints.point(point);
         this.write(batchPoints);
+    }
+
+    private BatchPoints getBatchPoints() {
+        return BatchPoints
+                    .database(DB_NAME)
+                    .retentionPolicy("autogen")
+                    .consistency(InfluxDB.ConsistencyLevel.ALL)
+                    .build();
     }
 
     private void write(final BatchPoints batchPoints) {
