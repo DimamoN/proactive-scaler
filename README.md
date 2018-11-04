@@ -10,7 +10,8 @@ $ influx
 
 * queries for grafana:
 ```
-SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(60s) fill(null)
+SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
+SELECT mean("cpu") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
 ```
 
 <h3>Data in InfluxDB</h3>
