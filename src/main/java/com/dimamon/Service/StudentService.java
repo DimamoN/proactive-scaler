@@ -26,27 +26,32 @@ public class StudentService {
     private ResourcesService resourcesService;
 
     public Collection<Student> getAll() {
-        influxDBTool.measure(0, "getAll", resourcesService.getCpuLoad());
+        influxDBTool.measure(0, "getAll",
+                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.retrieveAll();
     }
 
     public Student getById(int id) {
-        influxDBTool.measure(id, "get", resourcesService.getCpuLoad());
+        influxDBTool.measure(id, "get",
+                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.retrieveById(id);
     }
 
     public Student removeById(int id) {
-        influxDBTool.measure(id, "remove", resourcesService.getCpuLoad());
+        influxDBTool.measure(id, "remove",
+                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.remove(id);
     }
 
     public void update(final Student student) {
-        influxDBTool.measure(student.getId(), "update", resourcesService.getCpuLoad());
+        influxDBTool.measure(student.getId(), "update",
+                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         this.studentDao.update(student);
     }
 
     public void add(final Student student) {
-        influxDBTool.measure(student.getId(), "insert", resourcesService.getCpuLoad());
+        influxDBTool.measure(student.getId(), "insert",
+                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         this.studentDao.add(student);
     }
 }

@@ -28,13 +28,14 @@ public class InfluxDBTool {
                 .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);
     }
 
-    public void measure(int id, final String method, double cpuLoad) {
+    public void measure(int id, final String method, double cpuLoad, long freeMemory) {
         BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("connection")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("id", id)
                 .addField("method", method)
                 .addField("cpu", cpuLoad)
+                .addField("free_ram", freeMemory)
                 .build();
         batchPoints.point(point);
         this.write(batchPoints);
