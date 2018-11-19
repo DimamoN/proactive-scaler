@@ -1,7 +1,7 @@
 # SpringBoot_influxDB
 SpringBoot + influxDB + grafana
 
-How to run (method 1):
+### How to run (method 1):
 
 * start influx db locally
 ```bash
@@ -16,8 +16,7 @@ $ influx
 > create database for_grafana
 ```
 
-How to run (method 2):
-
+### How to run (method 2):
 * create docker volume for data persistent
 ```
 docker volume create --name=influxdb
@@ -28,7 +27,7 @@ docker volume create --name=influxdb
 $ docker-compose up
 ```
 
-* queries for grafana:
+### Queries for grafana:
 ```
 SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
 SELECT mean("cpu") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
