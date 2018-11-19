@@ -4,7 +4,7 @@ services:
 
   springApp:
     container_name:
-      springApp
+      springApp-instance
     restart: unless-stopped
     image: "dimamon/springboot_influx:1.0-SNAPSHOT"
     ports:
@@ -14,7 +14,7 @@ services:
 
   influxdb:
     container_name:
-      influxdb
+      influxdb-instance
     restart: unless-stopped
     image: "influxdb"
     ports:

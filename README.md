@@ -17,6 +17,12 @@ $ influx
 ```
 
 How to run (method 2):
+
+* create docker volume for data persistent
+```
+docker volume create --name=influxdb
+```
+
 * start docker-compose
 ```bash
 $ docker-compose up

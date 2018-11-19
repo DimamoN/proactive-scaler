@@ -4,29 +4,49 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
 
 
 /**
+ * Sending metrics to InfluxDB
  * Created by dimamon on 11/16/16.
  */
 @Repository
 @Qualifier("Influx")
-public class InfluxDBTool {
+public class MeasurementsService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MeasurementsService.class);
 
     private InfluxDB influxDB;
-    private final static String USERNAME = "root";
-    private final static String PASSWORD = "root";
-    private final static int UDP_PORT = 8086;
-    private final static String DB_NAME = "for_grafana";
 
-    {
-        this.influxDB = InfluxDBFactory
-//                .connect("http://localhost:" + UDP_PORT, USERNAME, PASSWORD);   // for localhost
-                .connect("http://influxdb:" + UDP_PORT, USERNAME, PASSWORD); // for docker-compose
+    @Value("${db.username}")
+    private String username;
+
+    @Value("${db.password}")
+    private String password;
+
+    @Value("${db.port}")
+    private int port;
+
+    @Value("${db.name}")
+    private String dbName;
+
+    @Value("${db.url}")
+    private String databaseUrl;
+
+    @PostConstruct
+    private void init() {
+        final String url = "http://" + databaseUrl + ":" + port;
+        LOGGER.info("Attempting to connect to: {}", url);
+        this.influxDB = InfluxDBFactory.connect(url, username, password);
     }
 
     public void measure(int id, final String method, double cpuLoad, long freeMemory) {
@@ -44,7 +64,7 @@ public class InfluxDBTool {
 
     private BatchPoints getBatchPoints() {
         return BatchPoints
-                    .database(DB_NAME)
+                    .database(dbName)
                     .retentionPolicy("autogen")
                     .consistency(InfluxDB.ConsistencyLevel.ALL)
                     .build();
@@ -56,7 +76,7 @@ public class InfluxDBTool {
 
 
 //        Достать из базы
-//        Query query = new Query("SELECT idle FROM cpu", DB_NAME);
+//        Query query = new Query("SELECT idle FROM cpu", dbName);
 //        influxDB.query(query);
 
 }

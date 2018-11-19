@@ -1,6 +1,6 @@
 package com.dimamon.Service;
 
-import com.dimamon.Dao.InfluxDBTool;
+import com.dimamon.Dao.MeasurementsService;
 import com.dimamon.Dao.StudentDao;
 import com.dimamon.Entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,37 +20,37 @@ public class StudentService {
     private StudentDao studentDao;
     
     @Autowired
-    private InfluxDBTool influxDBTool;
+    private MeasurementsService measurementsService;
 
     @Autowired
     private ResourcesService resourcesService;
 
     public Collection<Student> getAll() {
-        influxDBTool.measure(0, "getAll",
+        measurementsService.measure(0, "getAll",
                 resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.retrieveAll();
     }
 
     public Student getById(int id) {
-        influxDBTool.measure(id, "get",
+        measurementsService.measure(id, "get",
                 resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.retrieveById(id);
     }
 
     public Student removeById(int id) {
-        influxDBTool.measure(id, "remove",
+        measurementsService.measure(id, "remove",
                 resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         return this.studentDao.remove(id);
     }
 
     public void update(final Student student) {
-        influxDBTool.measure(student.getId(), "update",
+        measurementsService.measure(student.getId(), "update",
                 resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         this.studentDao.update(student);
     }
 
     public void add(final Student student) {
-        influxDBTool.measure(student.getId(), "insert",
+        measurementsService.measure(student.getId(), "insert",
                 resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
         this.studentDao.add(student);
     }
