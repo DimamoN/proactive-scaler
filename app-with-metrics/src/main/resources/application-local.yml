@@ -4,6 +4,4 @@ db:
   port: 8086
   username: root
   password: root
-
-server:
-    port: 8080
+  store_metrics: 3d

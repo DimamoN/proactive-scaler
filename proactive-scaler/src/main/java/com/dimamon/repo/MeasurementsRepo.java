@@ -3,8 +3,6 @@ package com.dimamon.repo;
 import com.dimamon.entities.WorkloadPoint;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.InfluxDBResultMapper;
@@ -16,11 +14,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /**
- * Sending metrics to InfluxDB
+ * Reads metrics from InfluxDB
  * Created by dimamon on 11/16/16.
  */
 @Repository
@@ -53,34 +50,10 @@ public class MeasurementsRepo {
         this.influxDB = InfluxDBFactory.connect(url, username, password);
     }
 
-    public void measureLoad(final String instanceName, double cpuLoad, long freeMemory) {
-        BatchPoints batchPoints = getBatchPoints();
-        Point point = Point.measurement("workload")
-                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                .addField("instanceName", instanceName)
-                .addField("cpu", cpuLoad)
-                .addField("free_ram", freeMemory)
-                .build();
-        batchPoints.point(point);
-        this.write(batchPoints);
-    }
-
     public List<WorkloadPoint> getLoadMetrics() {
         QueryResult queryResult = influxDB.query(new Query("select * from workload", dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
         return resultMapper.toPOJO(queryResult, WorkloadPoint.class);
     }
 
-
-    private BatchPoints getBatchPoints() {
-        return BatchPoints
-                .database(dbName)
-                .retentionPolicy("autogen")
-                .consistency(InfluxDB.ConsistencyLevel.ALL)
-                .build();
-    }
-
-    private void write(final BatchPoints batchPoints) {
-        influxDB.write(batchPoints);
-    }
 }

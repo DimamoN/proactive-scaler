@@ -16,27 +16,11 @@ docker run -p 8086:8086 \
               influxdb
 ```
 
-* create database *for_grafana*
-```bash
-$ influx
-> create database for_grafana
-```
-
-### How to run (method 2):
-* create docker volume for data persistent
-```
-docker volume create --name=influxdb
-```
-
-* start docker-compose
-```bash
-$ docker-compose up
-```
 
 ### Queries for grafana:
 ```
 SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
-SELECT mean("cpu") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
+SELECT mean("cpu") FROM "workload" WHERE $timeFilter GROUP BY time(1s) fill(null)
 ```
 
 <h3>Data in InfluxDB</h3>

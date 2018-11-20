@@ -41,11 +41,24 @@ public class MeasurementsRepo {
     @Value("${db.url}")
     private String databaseUrl;
 
+    @Value("${db.store_metrics}")
+    private String storeMetrics;
+
+    private static final String RETENTION_POLICY = "defaultPolicy";
+
     @PostConstruct
     private void init() {
         final String url = "http://" + databaseUrl + ":" + port;
-        LOGGER.info("Attempting to connect to: {}", url);
+        LOGGER.info("Attempting connect to influxDB at {}", url);
         this.influxDB = InfluxDBFactory.connect(url, username, password);
+
+        // create db if not exists
+        if (!influxDB.databaseExists(dbName)) {
+            influxDB.createDatabase(dbName);
+            influxDB.createRetentionPolicy(RETENTION_POLICY, dbName, storeMetrics, 1, true);
+            influxDB.setRetentionPolicy(RETENTION_POLICY);
+            influxDB.setDatabase(dbName);
+        }
     }
 
     public void measureConnection(int id, final String method) {
@@ -75,7 +88,7 @@ public class MeasurementsRepo {
     private BatchPoints getBatchPoints() {
         return BatchPoints
                 .database(dbName)
-                .retentionPolicy("autogen")
+                .retentionPolicy(RETENTION_POLICY)
                 .consistency(InfluxDB.ConsistencyLevel.ALL)
                 .build();
     }
