@@ -1,4 +1,4 @@
-package com.dimamon.Entity.measurements;
+package com.dimamon.entities;
 
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;

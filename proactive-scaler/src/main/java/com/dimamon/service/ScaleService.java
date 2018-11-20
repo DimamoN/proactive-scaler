@@ -1,7 +1,8 @@
-package com.dimamon.Service;
+package com.dimamon.service;
 
-import com.dimamon.Dao.MeasurementsRepo;
-import com.dimamon.Entity.measurements.WorkloadPoint;
+
+import com.dimamon.entities.WorkloadPoint;
+import com.dimamon.repo.MeasurementsRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 
 /**
  * Periodically check database with metrics to make workload prediction and make scaling decision

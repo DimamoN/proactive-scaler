@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetricsSenderService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScaleService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricsSenderService.class);
 
     private static final int INITIAL_DELAY = 10 * 1000;
     private static final int SEND_LOAD_EVERY = 10 * 1000;
