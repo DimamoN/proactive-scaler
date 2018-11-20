@@ -22,36 +22,28 @@ public class StudentService {
     @Autowired
     private MeasurementsRepo measurementsRepo;
 
-    @Autowired
-    private ResourcesService resourcesService;
-
     public Collection<Student> getAll() {
-        measurementsRepo.measure(0, "getAll",
-                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        measurementsRepo.measureConnection(0, "getAll");
         return this.studentDao.retrieveAll();
     }
 
     public Student getById(int id) {
-        measurementsRepo.measure(id, "get",
-                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        measurementsRepo.measureConnection(id, "get");
         return this.studentDao.retrieveById(id);
     }
 
     public Student removeById(int id) {
-        measurementsRepo.measure(id, "remove",
-                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        measurementsRepo.measureConnection(id, "remove");
         return this.studentDao.remove(id);
     }
 
     public void update(final Student student) {
-        measurementsRepo.measure(student.getId(), "update",
-                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        measurementsRepo.measureConnection(student.getId(), "update");
         this.studentDao.update(student);
     }
 
     public void add(final Student student) {
-        measurementsRepo.measure(student.getId(), "insert",
-                resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        measurementsRepo.measureConnection(student.getId(), "insert");
         this.studentDao.add(student);
     }
 }

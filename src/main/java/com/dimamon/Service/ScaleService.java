@@ -1,7 +1,7 @@
 package com.dimamon.Service;
 
 import com.dimamon.Dao.MeasurementsRepo;
-import com.dimamon.Entity.ConnectionPoint;
+import com.dimamon.Entity.measurements.WorkloadPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ScaleService {
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         LOGGER.info("### Checking metrics task");
-        List<ConnectionPoint> allMeasurements = measurementsRepo.getAllMeasurements();
+        List<WorkloadPoint> allMeasurements = measurementsRepo.getLoadMetrics();
         LOGGER.info(allMeasurements.toString());
 
         // todo: predict workload

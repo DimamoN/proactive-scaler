@@ -1,28 +1,27 @@
-package com.dimamon.Entity;
+package com.dimamon.Entity.measurements;
 
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
 import java.time.Instant;
 
-@Measurement(name = "connection")
-public class ConnectionPoint {
+@Measurement(name = "workload")
+public class WorkloadPoint {
 
     @Column(name = "time")
     private Instant time;
 
-    // todo: move to separate measurement
     @Column(name = "cpu")
     private Double cpu;
+
     @Column(name = "free_ram")
     private Integer freeRam;
 
-    @Column(name = "id")
-    private Integer id;
-    @Column(name = "method")
-    private String method;
+    @Column(name = "instanceName")
+    private String instanceName;
 
-    public ConnectionPoint() {}
+    public WorkloadPoint() {
+    }
 
     public Instant getTime() {
         return time;
@@ -48,30 +47,21 @@ public class ConnectionPoint {
         this.freeRam = freeRam;
     }
 
-    public Integer getId() {
-        return id;
+    public String getInstanceName() {
+        return instanceName;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 
     @Override
     public String toString() {
-        return "ConnectionPoint{" +
+        return "WorkloadPoint{" +
                 "time=" + time +
                 ", cpu=" + cpu +
                 ", freeRam=" + freeRam +
-                ", id=" + id +
-                ", method='" + method + '\'' +
+                ", instanceName='" + instanceName + '\'' +
                 '}';
     }
 }
