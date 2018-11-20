@@ -1,17 +1,21 @@
 package com.dimamon.Dao;
 
+import com.dimamon.Entity.ConnectionPoint;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
+import org.influxdb.impl.InfluxDBResultMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -21,9 +25,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Repository
 @Qualifier("Influx")
-public class MeasurementsService {
+public class MeasurementsRepo {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MeasurementsService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MeasurementsRepo.class);
 
     private InfluxDB influxDB;
 
@@ -62,21 +66,21 @@ public class MeasurementsService {
         this.write(batchPoints);
     }
 
+    public List<ConnectionPoint> getAllMeasurements() {
+        QueryResult queryResult = influxDB.query(new Query("select * from connection", dbName));
+        InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
+        return resultMapper.toPOJO(queryResult, ConnectionPoint.class);
+    }
+
     private BatchPoints getBatchPoints() {
         return BatchPoints
-                    .database(dbName)
-                    .retentionPolicy("autogen")
-                    .consistency(InfluxDB.ConsistencyLevel.ALL)
-                    .build();
+                .database(dbName)
+                .retentionPolicy("autogen")
+                .consistency(InfluxDB.ConsistencyLevel.ALL)
+                .build();
     }
 
     private void write(final BatchPoints batchPoints) {
         influxDB.write(batchPoints);
     }
-
-
-//        Достать из базы
-//        Query query = new Query("SELECT idle FROM cpu", dbName);
-//        influxDB.query(query);
-
 }

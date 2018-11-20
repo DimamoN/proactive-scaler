@@ -1,11 +1,14 @@
 package com.dimamon.Service;
 
-import com.dimamon.Dao.MeasurementsService;
+import com.dimamon.Dao.MeasurementsRepo;
+import com.dimamon.Entity.ConnectionPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Periodically check database with metrics to make workload prediction and make scaling decision
@@ -19,13 +22,14 @@ public class ScaleService {
     private static final int CHECK_EVERY = 30 * 1000;
 
     @Autowired
-    private MeasurementsService measurementsService;
+    private MeasurementsRepo measurementsRepo;
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         LOGGER.info("### Checking metrics task");
+        List<ConnectionPoint> allMeasurements = measurementsRepo.getAllMeasurements();
+        LOGGER.info(allMeasurements.toString());
 
-        // todo: get last metrics from influx db
         // todo: predict workload
         // todo: Kubernetes service
     }
