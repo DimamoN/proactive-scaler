@@ -1,4 +1,4 @@
-package com.dimamon.Entity;
+package com.dimamon.entities;
 
 /**
  * Created by dimamon on 11/15/16.

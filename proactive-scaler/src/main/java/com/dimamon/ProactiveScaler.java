@@ -4,13 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/**
- * Created by dimamon on 11/15/16.
- */
 @SpringBootApplication
 @EnableScheduling
-public class Main {
+public class ProactiveScaler {
     public static void main(String[] args){
-        SpringApplication.run(Main.class, args);
+        SpringApplication.run(ProactiveScaler.class, args);
     }
 }

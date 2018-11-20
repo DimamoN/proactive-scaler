@@ -1,6 +1,6 @@
-package com.dimamon.Dao;
+package com.dimamon.repo;
 
-import com.dimamon.Entity.Student;
+import com.dimamon.entities.Student;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 

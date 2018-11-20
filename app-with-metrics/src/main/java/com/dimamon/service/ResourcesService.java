@@ -1,4 +1,4 @@
-package com.dimamon.Service;
+package com.dimamon.service;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package com.dimamon.Controller;
+package com.dimamon.controllers;
 
-import com.dimamon.Entity.Student;
-import com.dimamon.Service.StudentService;
+import com.dimamon.entities.Student;
+import com.dimamon.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

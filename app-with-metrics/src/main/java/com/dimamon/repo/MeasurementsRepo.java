@@ -1,4 +1,4 @@
-package com.dimamon.Dao;
+package com.dimamon.repo;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;

@@ -1,8 +1,8 @@
-package com.dimamon.Service;
+package com.dimamon.service;
 
-import com.dimamon.Dao.MeasurementsRepo;
-import com.dimamon.Dao.StudentDao;
-import com.dimamon.Entity.Student;
+import com.dimamon.entities.Student;
+import com.dimamon.repo.MeasurementsRepo;
+import com.dimamon.repo.StudentDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

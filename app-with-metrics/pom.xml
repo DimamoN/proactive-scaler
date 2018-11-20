@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>springBoot</artifactId>
+        <groupId>com.dimamon</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.dimamon</groupId>
-    <artifactId>springBoot</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>proactive-scaler</module>
-        <module>app-with-metrics</module>
-    </modules>
+    <artifactId>app-with-metrics</artifactId>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.2.RELEASE</version>
-    </parent>
+    <name>app-with-metrics</name>
 
     <dependencies>
         <dependency>
@@ -47,6 +41,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
@@ -60,7 +55,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>docker.io/dimamon/springboot_influx</repository>
+                    <repository>docker.io/dimamon/springBoot-influxdb-sender</repository>
                     <tag>${project.version}</tag>
                 </configuration>
             </plugin>
