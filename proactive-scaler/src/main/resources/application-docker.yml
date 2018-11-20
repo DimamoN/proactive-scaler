@@ -1,0 +1,6 @@
+db:
+  url: localhost
+  name: for_grafana
+  port: 8086
+  username: root
+  password: root

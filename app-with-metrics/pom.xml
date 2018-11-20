@@ -36,6 +36,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <finalName>app-with-metrics</finalName>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>
@@ -50,7 +53,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>docker.io/dimamon/springBoot-influxdb-sender</repository>
+                    <repository>docker.io/dimamon/springboot-influxdb-sender</repository>
                     <tag>${project.version}</tag>
                 </configuration>
             </plugin>
