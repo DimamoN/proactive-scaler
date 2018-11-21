@@ -23,8 +23,13 @@ public class ScaleService {
     private static final int INITIAL_DELAY = 10 * 1000;
     private static final int CHECK_EVERY = 30 * 1000;
 
+    private static final int FORECAST_FOR = 6 * 5; // 5 minutes
+
     @Autowired
     private MeasurementsRepo measurementsRepo;
+
+    @Autowired
+    private PredictorService predictorService;
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
@@ -32,7 +37,9 @@ public class ScaleService {
         List<WorkloadPoint> allMeasurements = measurementsRepo.getLoadMetrics();
         LOGGER.info(allMeasurements.toString());
 
-        // todo: predict workload
+        // in progress: predict workload
+        predictorService.predictWorkload(FORECAST_FOR, allMeasurements);
+
         // todo: Kubernetes service
     }
 

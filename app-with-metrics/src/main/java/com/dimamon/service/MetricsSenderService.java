@@ -23,8 +23,10 @@ public class MetricsSenderService {
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = SEND_LOAD_EVERY)
     public void sendMetrics() {
-        LOGGER.info("Sending metrics");
-        measurementsRepo.measureLoad("app1", resourcesService.getCpuLoad(), resourcesService.getFreeMemory());
+        double cpuLoad = resourcesService.getCpuLoad();
+        long freeMemory = resourcesService.getFreeMemory();
+        LOGGER.info("Sending metrics: cpu {}, free_ram {}", cpuLoad, freeMemory);
+        measurementsRepo.measureLoad("app1", cpuLoad, freeMemory);
     }
 
 }
