@@ -7,7 +7,8 @@ There are two spring-boot apps here:
 * proactive-scaler
     reads metrics from influx db 
 
-### How to run (method 1):
+### How to run 
+### method 1:
 
 * start influx db locally
 ```bash
@@ -16,6 +17,12 @@ docker run -p 8086:8086 \
               influxdb
 ```
 
+### method 2:
+
+* start app and database in docker-compose
+```bash
+docker-compose up
+```
 
 ### Queries for grafana:
 ```
