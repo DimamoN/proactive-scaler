@@ -5,3 +5,4 @@ db:
   username: root
   password: root
   store_metrics: 3d
+  metricsEnabled: false

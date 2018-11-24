@@ -1,5 +1,6 @@
 package com.dimamon.repo;
 
+import com.dimamon.utils.StringUtils;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
@@ -44,12 +45,21 @@ public class MeasurementsRepo {
     @Value("${db.store_metrics}")
     private String storeMetrics;
 
+    @Value("${db.metricsEnabled}")
+    private Boolean metricsEnabled;
+
     private static final String RETENTION_POLICY = "defaultPolicy";
 
     @PostConstruct
     private void init() {
+
+        if (!metricsEnabled) {
+            return;
+        }
+
         final String url = "http://" + databaseUrl + ":" + port;
         LOGGER.info("Attempting connect to influxDB at {}", url);
+
         this.influxDB = InfluxDBFactory.connect(url, username, password);
 
         // create db if not exists
@@ -62,6 +72,9 @@ public class MeasurementsRepo {
     }
 
     public void measureConnection(int id, final String method) {
+        if (!metricsEnabled) {
+            return;
+        }
         BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("connection")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
@@ -74,12 +87,31 @@ public class MeasurementsRepo {
 
 
     public void measureLoad(final String instanceName, double cpuLoad, long freeMemory) {
+        if (!metricsEnabled) {
+            return;
+        }
         BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("workload")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("instanceName", instanceName)
-                .addField("cpu", cpuLoad)
+                .addField("cpu", StringUtils.stringify(cpuLoad))
                 .addField("free_ram", freeMemory)
+                .build();
+        batchPoints.point(point);
+        this.write(batchPoints);
+    }
+
+    public void measureJVMLoad(final String instanceName, long freeMemory, long totalMemory, long maxMemory) {
+        if (!metricsEnabled) {
+            return;
+        }
+        BatchPoints batchPoints = getBatchPoints();
+        Point point = Point.measurement("workload_jvm")
+                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                .addField("instanceName", instanceName)
+                .addField("free_ram", freeMemory)
+                .addField("total_ram", totalMemory)
+                .addField("max_ram", maxMemory)
                 .build();
         batchPoints.point(point);
         this.write(batchPoints);
