@@ -42,7 +42,7 @@ public class MetricsSenderService {
         LOGGER.info("JVM STATS # free/total/max jvm_ram=[{}/{}/{}]",
                 freeJVMMem, totalJVMMem, maxJVMMem);
 
-        measurementsRepo.measureLoad("app1", cpuLoad, freeJVMMem);
+        measurementsRepo.measureLoad("app1", cpuLoad, freeMemory, totalMemory);
         measurementsRepo.measureJVMLoad("app1", freeJVMMem, totalJVMMem, maxJVMMem);
     }
 

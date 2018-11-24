@@ -86,7 +86,7 @@ public class MeasurementsRepo {
     }
 
 
-    public void measureLoad(final String instanceName, double cpuLoad, long freeMemory) {
+    public void measureLoad(final String instanceName, double cpuLoad, long freeMemory, long totalMemory) {
         if (!metricsEnabled) {
             return;
         }
@@ -96,6 +96,7 @@ public class MeasurementsRepo {
                 .addField("instanceName", instanceName)
                 .addField("cpu", cpuLoad)
                 .addField("free_ram", freeMemory)
+                .addField("total_ram", totalMemory)
                 .build();
         batchPoints.point(point);
         this.write(batchPoints);
