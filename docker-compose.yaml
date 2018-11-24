@@ -16,6 +16,7 @@ services:
     - DB_PORT=8086
     - DB_USERNAME=root
     - DB_PASSWORD=root
+    - METRICS_ENABLED=true
     depends_on:
     - "influxdb"
 

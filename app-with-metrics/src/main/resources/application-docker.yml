@@ -5,4 +5,8 @@ db:
   username: ${DB_USERNAME}
   password: ${DB_PASSWORD}
   store_metrics: 3d
-  metricsEnabled: true
+  metricsEnabled: ${METRICS_ENABLED}
+
+kubernetes:
+  node_name: ${NODE_NAME}
+  pod_name: ${POD_NAME}
