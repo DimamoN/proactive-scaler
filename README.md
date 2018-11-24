@@ -28,6 +28,7 @@ docker-compose up
 ```
 SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
 SELECT mean("cpu") FROM "workload" WHERE $timeFilter GROUP BY time(1s) fill(null)
+SELECT count("method") FROM "connection" WHERE ("method" = 'cpu') AND $timeFilter GROUP BY time(10s) fill(null)
 ```
 
 <h3>Data in InfluxDB</h3>
