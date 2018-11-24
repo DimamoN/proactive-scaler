@@ -9,6 +9,13 @@ services:
     image: "dimamon/springboot-influxdb-sender:1.0-SNAPSHOT"
     ports:
     - 8081:8081
+    # connect to influx config
+    environment:
+    - DB_URL=influxdb-instance
+    - DB_NAME=for_grafana
+    - DB_PORT=8086
+    - DB_USERNAME=root
+    - DB_PASSWORD=root
     depends_on:
     - "influxdb"
 

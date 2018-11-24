@@ -1,8 +1,8 @@
 db:
-  url: influxdb-instance
-  name: for_grafana
-  port: 8086
-  username: root
-  password: root
+  url: ${DB_URL}
+  name: ${DB_NAME}
+  port: ${DB_PORT}
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
   store_metrics: 3d
-  metricsEnabled: false
+  metricsEnabled: true

@@ -94,7 +94,7 @@ public class MeasurementsRepo {
         Point point = Point.measurement("workload")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("instanceName", instanceName)
-                .addField("cpu", StringUtils.stringify(cpuLoad))
+                .addField("cpu", cpuLoad)
                 .addField("free_ram", freeMemory)
                 .build();
         batchPoints.point(point);
