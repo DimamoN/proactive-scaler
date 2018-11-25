@@ -29,10 +29,16 @@ docker-compose up
 
 ### method 3 (Kubernetes - Minikube):
 ```bash
-k create -f kubernetes/app-with-metrics.yaml
-k expose deployment metrics-app --type=NodePort
+kubectl create -f kubernetes/app-with-metrics.yaml
+kubectl expose deployment metrics-app --type=NodePort
 minikube service metrics-app --url
 ```
+
+### Scale metrics-app
+```bash
+kubectl scale deployment metrics-app --replicas=[SIZE]
+```
+> where [SIZE] is pod count
 
 ### Queries for grafana:
 ```

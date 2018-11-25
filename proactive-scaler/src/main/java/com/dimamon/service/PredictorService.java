@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface PredictorService {
 
-    void predictWorkload(int valuesToPredict, List<WorkloadPoint> lastWorkload);
+    double predictWorkload(int valuesToPredict, List<WorkloadPoint> lastWorkload);
 
 }

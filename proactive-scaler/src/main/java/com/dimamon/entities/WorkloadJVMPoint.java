@@ -5,14 +5,14 @@ import org.influxdb.annotation.Measurement;
 
 import java.time.Instant;
 
-@Measurement(name = "workload")
-public class WorkloadPoint {
+@Measurement(name = "workload_jvm")
+public class WorkloadJVMPoint {
 
     @Column(name = "time")
     private Instant time;
 
-    @Column(name = "cpu")
-    private Double cpu;
+    @Column(name = "instanceName")
+    private String instanceName;
 
     @Column(name = "free_ram")
     private Integer freeRam;
@@ -20,10 +20,10 @@ public class WorkloadPoint {
     @Column(name = "total_ram")
     private Integer totalRam;
 
-    @Column(name = "instanceName")
-    private String instanceName;
+    @Column(name = "max_ram")
+    private Integer maxRam;
 
-    public WorkloadPoint() {
+    public WorkloadJVMPoint() {
     }
 
     public Instant getTime() {
@@ -34,12 +34,12 @@ public class WorkloadPoint {
         this.time = time;
     }
 
-    public Double getCpu() {
-        return cpu;
+    public String getInstanceName() {
+        return instanceName;
     }
 
-    public void setCpu(Double cpu) {
-        this.cpu = cpu;
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 
     public Integer getFreeRam() {
@@ -58,22 +58,22 @@ public class WorkloadPoint {
         this.totalRam = totalRam;
     }
 
-    public String getInstanceName() {
-        return instanceName;
+    public Integer getMaxRam() {
+        return maxRam;
     }
 
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
+    public void setMaxRam(Integer maxRam) {
+        this.maxRam = maxRam;
     }
 
     @Override
     public String toString() {
-        return "WorkloadPoint{" +
+        return "WorkloadJVMPoint{" +
                 "time=" + time +
-                ", cpu=" + cpu +
+                ", instanceName='" + instanceName + '\'' +
                 ", freeRam=" + freeRam +
                 ", totalRam=" + totalRam +
-                ", instanceName='" + instanceName + '\'' +
+                ", maxRam=" + maxRam +
                 '}';
     }
 }

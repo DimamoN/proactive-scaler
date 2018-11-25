@@ -18,7 +18,7 @@ public class EsPredictorService implements PredictorService {
     private static final Double ALPHA = 0.75;
 
     @Override
-    public void predictWorkload(int valuesToPredict, List<WorkloadPoint> lastWorkload) {
+    public double predictWorkload(int valuesToPredict, List<WorkloadPoint> lastWorkload) {
 
         if (lastWorkload.isEmpty()) {
             LOGGER.debug("last workload is empty, can't predict");
@@ -41,7 +41,9 @@ public class EsPredictorService implements PredictorService {
                 .mapToDouble(a -> a)
                 .average();
 
-        LOGGER.info("AVERAGE PREDICTION IS {}", average.getAsDouble());
+        double asDouble = average.getAsDouble();
+        LOGGER.info("AVERAGE PREDICTION IS {}", asDouble);
+        return asDouble;
     }
 
     private Double predictOne(final Double prevActual, final Double prevPredicted) {

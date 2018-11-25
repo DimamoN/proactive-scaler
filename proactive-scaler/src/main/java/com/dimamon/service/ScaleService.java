@@ -23,6 +23,9 @@ public class ScaleService {
     private static final int INITIAL_DELAY = 10 * 1000;
     private static final int CHECK_EVERY = 30 * 1000;
 
+    /**
+     * 1 unit is 10 seconds, so 6 * 5 = 1 min
+     */
     private static final int FORECAST_FOR = 6 * 5; // 5 minutes
 
     @Autowired
@@ -38,7 +41,8 @@ public class ScaleService {
         LOGGER.info(allMeasurements.toString());
 
         // in progress: predict workload
-        predictorService.predictWorkload(FORECAST_FOR, allMeasurements);
+        double avgPredictedWorkload = predictorService.predictWorkload(FORECAST_FOR, allMeasurements);
+        measurementsRepo.writePrediction("all", avgPredictedWorkload);
 
         // todo: Kubernetes service
     }
