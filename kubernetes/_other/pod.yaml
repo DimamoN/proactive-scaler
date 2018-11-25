@@ -1,0 +1,39 @@
+# Just a pod, really don't need it anymore
+apiVersion: v1
+kind: Pod
+metadata:
+  name: metrics-app
+spec:
+  containers:
+  - name: metrics-app
+    image: dimamon/springboot-influxdb-sender:1.2-SNAPSHOT
+    ports:
+    - containerPort: 8081
+    resources:
+      requests:
+        cpu: 400m
+        memory: 400Mi
+      limits:
+        cpu: 800m
+        memory: 700Mi
+    env:
+    - name: METRICS_ENABLED
+      value: "true"
+    - name: DB_URL
+      value: "46.119.5.94"
+    - name: DB_NAME
+      value: "for_grafana"
+    - name: DB_PORT
+      value: "8086"
+    - name: DB_USERNAME
+      value: "root"
+    - name: DB_PASSWORD
+      value: "root"
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
