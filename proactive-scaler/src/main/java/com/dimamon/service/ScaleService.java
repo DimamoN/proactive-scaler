@@ -3,13 +3,17 @@ package com.dimamon.service;
 
 import com.dimamon.entities.WorkloadPoint;
 import com.dimamon.repo.MeasurementsRepo;
+import com.dimamon.service.kubernetes.KubernetesService;
+import com.dimamon.service.predict.PredictorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -28,11 +32,17 @@ public class ScaleService {
      */
     private static final int FORECAST_FOR = 6 * 5; // 5 minutes
 
+    private static final int SCALE_THRESHOLD = 80;
+
     @Autowired
     private MeasurementsRepo measurementsRepo;
 
+    @Qualifier("desPredictor")
     @Autowired
     private PredictorService predictorService;
+
+    @Autowired
+    private KubernetesService kubernetesService;
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
@@ -41,10 +51,21 @@ public class ScaleService {
         LOGGER.info(allMeasurements.toString());
 
         // in progress: predict workload
-        double avgPredictedWorkload = predictorService.predictWorkload(FORECAST_FOR, allMeasurements);
+        List<Double> cpuMeasurements = allMeasurements.stream()
+                .map(WorkloadPoint::getCpu)
+                .collect(Collectors.toList());
+
+        double avgPredictedWorkload = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
+        LOGGER.info("### AVERAGE PREDICTION = {}", avgPredictedWorkload);
         measurementsRepo.writePrediction("all", avgPredictedWorkload);
 
-        // todo: Kubernetes service
+        if (shouldScale(avgPredictedWorkload)) {
+            LOGGER.info("### SCALING UP !!! ###");
+        }
+    }
+
+    private boolean shouldScale(double predictedWorkload) {
+        return predictedWorkload > SCALE_THRESHOLD;
     }
 
 }

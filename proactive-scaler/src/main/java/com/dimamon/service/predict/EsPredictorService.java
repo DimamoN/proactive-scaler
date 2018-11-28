@@ -1,16 +1,17 @@
-package com.dimamon.service;
+package com.dimamon.service.predict;
 
-import com.dimamon.entities.WorkloadPoint;
+import com.dimamon.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.OptionalDouble;
-import java.util.stream.Collectors;
 
-@Service
+import static com.dimamon.utils.StringUtils.*;
+
+@Service("esPredictor")
 public class EsPredictorService implements PredictorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsPredictorService.class);
@@ -18,32 +19,21 @@ public class EsPredictorService implements PredictorService {
     private static final Double ALPHA = 0.75;
 
     @Override
-    public double predictWorkload(int valuesToPredict, List<WorkloadPoint> lastWorkload) {
+    public List<Double> predictWorkload(int valuesToPredict, List<Double> lastWorkload) {
 
         if (lastWorkload.isEmpty()) {
             LOGGER.debug("last workload is empty, can't predict");
+            return Collections.emptyList();
         }
 
-        List<Double> cpuList = lastWorkload.stream()
-                .map(WorkloadPoint::getCpu)
-                .collect(Collectors.toList());
+        final Double lastActualValue = lastWorkload.get(lastWorkload.size() - 1);
 
-        final Double lastActualValue = cpuList.get(cpuList.size() - 1);
-
-        List<Double> preList = predictListPrev(cpuList);
+        List<Double> preList = predictListPrev(lastWorkload);
         final Double lastPredictedValue = preList.get(preList.size() - 1);
 
         List<Double> predictedValues = predictNext(valuesToPredict, lastPredictedValue, lastActualValue);
-        LOGGER.info("PREDICTED VALUES {} IS : {}", valuesToPredict, predictedValues);
-
-
-        OptionalDouble average = predictedValues.stream()
-                .mapToDouble(a -> a)
-                .average();
-
-        double asDouble = average.getAsDouble();
-        LOGGER.info("AVERAGE PREDICTION IS {}", asDouble);
-        return asDouble;
+        LOGGER.info("Predicted {} values is : {}", valuesToPredict, showValues(predictedValues));
+        return predictedValues;
     }
 
     private Double predictOne(final Double prevActual, final Double prevPredicted) {
@@ -65,7 +55,7 @@ public class EsPredictorService implements PredictorService {
     //1
     private List<Double> predictListPrev(List<Double> realValues) {
 
-        LOGGER.info("Predict from : {}", realValues.toString());
+        LOGGER.info("Predict from : {}", showValues(realValues));
 
         List<Double> predictedValues = new ArrayList<>();
         for (int i = 0; i < realValues.size(); ++i) {
@@ -80,8 +70,7 @@ public class EsPredictorService implements PredictorService {
             }
         }
 
-        LOGGER.info("Pre-Predicted list : {}", predictedValues.toString());
-
+        LOGGER.info("Pre-Predicted list : {}", showValues(predictedValues));
         return predictedValues;
     }
 

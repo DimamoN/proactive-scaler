@@ -6,7 +6,7 @@ spec:
   selector:
     matchLabels:
       app: metrics-app
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -29,7 +29,7 @@ spec:
         - name: METRICS_ENABLED
           value: "true"
         - name: DB_URL
-          value: "YOUR_IP"
+          value: "46.119.5.94"
         - name: DB_NAME
           value: "for_grafana"
         - name: DB_PORT

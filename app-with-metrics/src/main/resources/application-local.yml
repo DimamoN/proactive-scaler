@@ -6,3 +6,7 @@ db:
   password: root
   store_metrics: 3d
   metricsEnabled: true
+
+kubernetes:
+  node_name: node
+  pod_name: app
