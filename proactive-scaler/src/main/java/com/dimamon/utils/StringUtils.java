@@ -6,10 +6,17 @@ import java.util.stream.Collectors;
 
 public class StringUtils {
 
+    private static final DecimalFormat decimalFormat = new DecimalFormat("#.0#");
+
     public static List<String> showValues(List<Double> list) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.0#");
         return list.stream()
                 .map(decimalFormat::format)
                 .collect(Collectors.toList());
     }
+
+    public static String showValue(Double value) {
+        return decimalFormat.format(value);
+    }
+
+
 }
