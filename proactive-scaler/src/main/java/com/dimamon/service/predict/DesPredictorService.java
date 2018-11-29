@@ -1,6 +1,5 @@
 package com.dimamon.service.predict;
 
-import com.dimamon.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -51,12 +50,14 @@ public class DesPredictorService implements PredictorService {
 
     private List<Double> predictNext(int toPredict, final Double lastPredicted, final Double lastTrend) {
         List<Double> predictedList = new ArrayList<>();
+
         for (int i = 1; i <= toPredict; i++) {
-            // mistake here! i need to calc level, too!
             if (i == 1) {
                 predictedList.add(predictOne(lastPredicted, lastTrend));
             } else {
-                predictedList.add(predictOne(lastPredicted, i * lastTrend));
+                LOGGER.info("Predict[{}]: prevPredicted:{}, prevTrend:{}",
+                        i, predictedList.get(predictedList.size() - 1), lastTrend );
+                predictedList.add(predictOne(predictedList.get(predictedList.size() - 1), lastTrend));
             }
         }
         return predictedList;
@@ -78,11 +79,9 @@ public class DesPredictorService implements PredictorService {
                 trends.add(0.0);
             } else if (i == 1) {
                 predictedValues.add(realValues.get(i - 1));
-                levels.add(this.calcLevel(realValues.get(i - 1), levels.get(i - 1), trends.get(i - 1)));
-                trends.add(this.calcTrend(levels.get(i), levels.get(i - 1), trends.get(i - 1)));
+                calcLevelsAndTrends(levels, trends, realValues, i);
             } else {
-                levels.add(this.calcLevel(realValues.get(i - 1), levels.get(i - 1), trends.get(i - 1)));
-                trends.add(this.calcLevel(levels.get(i), levels.get(i - 1), trends.get(i - 1)));
+                calcLevelsAndTrends(levels, trends, realValues, i);
                 predictedValues.add(this.predictOne(levels.get(i - 1), trends.get(i - 1)));
             }
         }
@@ -92,6 +91,12 @@ public class DesPredictorService implements PredictorService {
 
         LOGGER.info("Pre-Predicted list : {}", showValues(predictedValues));
         return result;
+    }
+
+    private void calcLevelsAndTrends(List<Double> levels, List<Double> trends,
+                                     List<Double> realValues, int i) {
+        levels.add(this.calcLevel(realValues.get(i - 1), levels.get(i - 1), trends.get(i - 1)));
+        trends.add(this.calcTrend(levels.get(i), levels.get(i - 1), trends.get(i - 1)));
     }
 
     class PrePredictedResult {

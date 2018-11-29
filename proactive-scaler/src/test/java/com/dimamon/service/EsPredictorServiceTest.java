@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 
 class EsPredictorServiceTest {
 
-    EsPredictorService service = new EsPredictorService();
+    private EsPredictorService service = new EsPredictorService();
 
     @Test
     void predictWorkload() {
         service.predictWorkload(10, TestValues.DATASET_1);
+        service.predictWorkload(10, TestValues.DATASET_2);
     }
 }
