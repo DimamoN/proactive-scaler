@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +50,10 @@ public class ScaleService {
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
-        LOGGER.info("### Checking metrics task");
+
+        kubernetesService.checkPods();
+
+        LOGGER.info("### Checking metrics task = {}", new Date());
 //        List<WorkloadPoint> allMeasurements = measurementsRepo.getLoadMetrics();
         List<WorkloadPoint> allMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT);
         LOGGER.info(allMeasurements.toString());
@@ -65,8 +69,12 @@ public class ScaleService {
 
         if (shouldScaleUp(avgPrediction)) {
             LOGGER.info("### SCALING UP, avg prediction {} > {}", avgPrediction, SCALE_UP_THRESHOLD);
+            kubernetesService.scaleUpService();
         } else if (shouldScaleDown(avgPrediction)) {
             LOGGER.info("### SCALING DOWN, avg prediction {} < {}", avgPrediction, SCALE_DOWN_THRESHOLD);
+            kubernetesService.scaleDownService();
+        } else {
+            LOGGER.info("### NO NEED TO SCALE");
         }
     }
 

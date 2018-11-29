@@ -25,10 +25,27 @@ class LoadTest {
             40., 43., 40., 47., 45., 52., 50., 60., 55., 64., 62., 69., 74., 75., 80.
     );
 
+    public static final List<Integer> WORKLOAD_1 = Arrays.asList(
+            10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5000, 10000, 20000, 25000, 30000
+    );
+
+    public static final List<Integer> WORKLOAD_2 = Arrays.asList(
+            2560, 5000, 10000, 20000, 25000, 30000, 35000, 40000
+    );
+
+    // ON MAC, i5:
+    // 320  = 11%
+    // 640  = 15%
+    // 1250 = 26%
+    // 2500 = 48%
+    // 5000 = 50%
+    // 10000 = 52%
+    // 20000 = 62-90 ?
+
     @Test
     void loadTestCpu() {
-        DATASET_2.stream().forEach(val -> {
-
+        LOGGER.info("### TEST STARTED ###");
+        WORKLOAD_2.forEach(val -> {
             final String url = URL + "/workload/cpu/" + val;
             LOGGER.info("connect: {}", url);
             URLConnection connection = null;
@@ -48,10 +65,8 @@ class LoadTest {
                 e.printStackTrace();
             }
         });
+        LOGGER.info("### TEST ENDED ###");
     }
-
-
-
 
     @Test
     void loadTest() throws IOException, InterruptedException {
