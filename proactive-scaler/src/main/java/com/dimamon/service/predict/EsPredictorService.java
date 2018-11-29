@@ -1,6 +1,5 @@
 package com.dimamon.service.predict;
 
-import com.dimamon.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.dimamon.utils.StringUtils.*;
+import static com.dimamon.utils.StringUtils.showValues;
 
 @Service("esPredictor")
 public class EsPredictorService implements PredictorService {

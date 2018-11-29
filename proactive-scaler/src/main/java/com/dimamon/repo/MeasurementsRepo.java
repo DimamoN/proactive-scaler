@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -71,6 +72,15 @@ public class MeasurementsRepo {
         QueryResult queryResult = influxDB.query(new Query("select * from workload", dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
         return resultMapper.toPOJO(queryResult, WorkloadPoint.class);
+    }
+
+    public List<WorkloadPoint> getLastLoadMetrics(int count) {
+        String query = "SELECT * FROM workload ORDER BY time DESC LIMIT " + count;
+        QueryResult queryResult = influxDB.query(new Query(query, dbName));
+        InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
+        List<WorkloadPoint> workloadPoints = resultMapper.toPOJO(queryResult, WorkloadPoint.class);
+        Collections.reverse(workloadPoints);
+        return workloadPoints;
     }
 
     public List<WorkloadJVMPoint> getLoadJVMMetrics() {

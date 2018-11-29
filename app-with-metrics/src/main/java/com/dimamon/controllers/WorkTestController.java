@@ -29,9 +29,10 @@ public class WorkTestController {
     public void cpu(){
         measurementsRepo.measureConnection(1, "cpu");
         int tmp = 0;
-        for (int i = 0; i < 1_000_000; i++) {
+        for (int i = 0; i < 100_000_000; i++) {
             tmp++;
         }
+        tmp = 0;
     }
 
     @RequestMapping(value = "/ram", method = RequestMethod.GET)
@@ -79,5 +80,8 @@ public class WorkTestController {
             e.printStackTrace();
         }
     }
+
+
+    //todo: add workload generator based on random generator, or on prepared list
 
 }

@@ -30,14 +30,17 @@ public class ScaleService {
     /**
      * 1 unit is 10 seconds, so 6 * 5 = 1 min
      */
-    private static final int FORECAST_FOR = 6 * 5; // 5 minutes
+    private static final int FORECAST_FOR = 6 * 2; // 2 minutes
 
-    private static final int SCALE_THRESHOLD = 80;
+    private static final int SCALE_UP_THRESHOLD = 80;
+    private static final int SCALE_DOWN_THRESHOLD = 25;
+
+    private static final int LAST_METRICS_COUNT = 12;
 
     @Autowired
     private MeasurementsRepo measurementsRepo;
 
-    @Qualifier("desPredictor")
+    @Qualifier("esPredictor")
     @Autowired
     private PredictorService predictorService;
 
@@ -47,7 +50,8 @@ public class ScaleService {
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         LOGGER.info("### Checking metrics task");
-        List<WorkloadPoint> allMeasurements = measurementsRepo.getLoadMetrics();
+//        List<WorkloadPoint> allMeasurements = measurementsRepo.getLoadMetrics();
+        List<WorkloadPoint> allMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT);
         LOGGER.info(allMeasurements.toString());
 
         // in progress: predict workload
@@ -55,17 +59,23 @@ public class ScaleService {
                 .map(WorkloadPoint::getCpu)
                 .collect(Collectors.toList());
 
-        double avgPredictedWorkload = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
-        LOGGER.info("### AVERAGE PREDICTION = {}", avgPredictedWorkload);
-        measurementsRepo.writePrediction("all", avgPredictedWorkload);
+        double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
+        LOGGER.info("### AVERAGE PREDICTION = {}", avgPrediction);
+        measurementsRepo.writePrediction("all", avgPrediction);
 
-        if (shouldScale(avgPredictedWorkload)) {
-            LOGGER.info("### SCALING UP !!! ###");
+        if (shouldScaleUp(avgPrediction)) {
+            LOGGER.info("### SCALING UP, avg prediction {} > {}", avgPrediction, SCALE_UP_THRESHOLD);
+        } else if (shouldScaleDown(avgPrediction)) {
+            LOGGER.info("### SCALING DOWN, avg prediction {} < {}", avgPrediction, SCALE_DOWN_THRESHOLD);
         }
     }
 
-    private boolean shouldScale(double predictedWorkload) {
-        return predictedWorkload > SCALE_THRESHOLD;
+    private boolean shouldScaleUp(double predictedWorkload) {
+        return predictedWorkload > SCALE_UP_THRESHOLD;
+    }
+
+    private boolean shouldScaleDown(double predictedWorkload) {
+        return predictedWorkload < SCALE_DOWN_THRESHOLD;
     }
 
 }
