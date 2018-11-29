@@ -10,3 +10,7 @@ db:
 kubernetes:
   node_name: ${NODE_NAME}
   pod_name: ${POD_NAME}
+
+workload:
+  basic_cpu: ${BASIC_CPU_LOAD}
+  basic_ram: ${BASIC_RAM_LOAD}

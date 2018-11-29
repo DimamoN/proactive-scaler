@@ -4,3 +4,7 @@ spring:
 
 server:
     port: 8081
+
+workload:
+    basic_cpu: 100000000
+    basic_ram: 10000
