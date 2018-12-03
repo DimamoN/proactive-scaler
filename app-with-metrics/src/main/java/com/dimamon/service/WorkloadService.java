@@ -26,10 +26,14 @@ public class WorkloadService {
         long iterations = BASIC_CPU_WORK * power;
         LOGGER.info("Get cpu load task: {} = {} iterations", power, iterations);
         int tmp = 0;
+        double sin = 0, cos = 0;
         for (long i = 0; i < iterations; i++) {
             tmp++;
+            sin = Math.sin(i);
+            cos = Math.cos(1 - i);
         }
         tmp = 0;
+        double res = sin + cos;
     }
 
     public void loadRam(Integer power) {

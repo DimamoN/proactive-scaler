@@ -32,7 +32,6 @@ public class StudentController {
         return this.studentService.removeById(id);
     }
 
-    //consumes = MediaType.APPLICATION_JSON_VALUE
     @RequestMapping(method = RequestMethod.PUT)
     public void updateStudent(@RequestBody Student student) {
         this.studentService.update(student);
@@ -42,6 +41,5 @@ public class StudentController {
     public void insertStudent(@RequestBody Student student) {
         this.studentService.add(student);
     }
-
 
 }
