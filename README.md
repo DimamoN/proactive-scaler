@@ -1,4 +1,4 @@
-# SpringBoot_influxDB
+# Kubernetes proactive scaler
 SpringBoot + influxDB + grafana
 
 There are two spring-boot apps here:
