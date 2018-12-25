@@ -1,4 +1,4 @@
-# SpringBoot_influxDB
+# Kubernetes proactive scaler
 SpringBoot + influxDB + grafana
 
 There are two spring-boot apps here:
@@ -51,9 +51,6 @@ SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(nu
 SELECT mean("cpu") FROM "workload" WHERE $timeFilter GROUP BY time(1s) fill(null)
 SELECT count("method") FROM "connection" WHERE ("method" = 'cpu') AND $timeFilter GROUP BY time(10s) fill(null)
 ```
-
-<h3>Data in InfluxDB</h3>
-<img src="https://pp.vk.me/c638331/v638331767/bfde/QnsfkyVDEGg.jpg" alt="influx" />
 
 <h3>Dashboard in Grafana</h3>
 <img src="https://pp.vk.me/c638331/v638331767/bfd6/CCIxqKysD8U.jpg" alt="grafana" />
