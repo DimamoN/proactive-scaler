@@ -34,6 +34,11 @@ kubectl scale deployment metrics-app --replicas=[SIZE]
 ```
 > where [SIZE] is pod count
 
+### Testing kubernetes reactive autoscaling
+```bash
+kubectl autoscale deployment metrics-app --max=3 --cpu-percent=80
+```
+
 ### Clear database
 ```
 ./clearDatabase.sh
