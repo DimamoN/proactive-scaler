@@ -8,7 +8,7 @@ There are two spring-boot apps here:
     reads metrics from influx db 
 
 ### How to run
-### method 1:
+### method 1
 
 * start influx db locally
 ```bash
@@ -17,22 +17,16 @@ docker run -p 8086:8086 \
               influxdb
 ```
 
-* start the app with IDEA or java -jar
+* start metrics app & scaler app with IDEA or java -jar
 
-### method 2 (Docker-compose):
-
-* start app and database in docker-compose
-```bash
-docker-compose up
-
-```
-
-### method 3 (Kubernetes - Minikube):
+### method 2 (Kubernetes - Minikube)
 ```bash
 kubectl create -f kubernetes/app-with-metrics.yaml
 kubectl expose deployment metrics-app --type=NodePort
 minikube service metrics-app --url
 ```
+
+* start scaler app with IDEA or java -jar
 
 ### Scale metrics-app
 ```bash
@@ -40,7 +34,13 @@ kubectl scale deployment metrics-app --replicas=[SIZE]
 ```
 > where [SIZE] is pod count
 
-### Queries for grafana:
+### Clear database
+```
+./clearDatabase.sh
+
+```
+
+### Queries for grafana
 ```
 SELECT count("id") FROM "connection" WHERE $timeFilter GROUP BY time(1s) fill(null)
 SELECT mean("cpu") FROM "workload" WHERE $timeFilter GROUP BY time(1s) fill(null)
