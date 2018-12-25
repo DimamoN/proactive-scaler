@@ -1,4 +1,4 @@
-FROM openjdk:8
+FROM openjdk:11-oracle
 COPY target/app-with-metrics.jar /
 EXPOSE 8081
 RUN bash -c 'touch /app-with-metrics.jar'
