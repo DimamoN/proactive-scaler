@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: metrics-app
-        image: dimamon/springboot-influxdb-sender:2.0-SNAPSHOT
+        image: dimamon/springboot-influxdb-sender:2.1-SNAPSHOT
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
@@ -26,6 +26,8 @@ spec:
             cpu: 400m
             memory: 400Mi
         env:
+        - name: JAVA_OPTS
+          value: "-Xms300m -Xmx400m"
         - name: METRICS_ENABLED
           value: "true"
         - name: DB_URL
