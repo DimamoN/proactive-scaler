@@ -64,7 +64,7 @@ public class MetricsSenderService {
         LOGGER.info("JVM STATS # free/total/max jvm_ram=[{}/{}/{}]",
                 freeJVMMem, totalJVMMem, maxJVMMem);
 
-        measurementsRepo.measureLoad(podName, cpuLoad, freeMemory, totalMemory);
+        measurementsRepo.measureLoad(podName, cpuLoad, cpuLoadProcess, freeMemory, totalMemory);
         measurementsRepo.measureJVMLoad(podName, freeJVMMem, totalJVMMem, maxJVMMem);
     }
 
