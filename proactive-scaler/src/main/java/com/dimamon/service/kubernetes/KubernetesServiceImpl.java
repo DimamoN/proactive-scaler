@@ -28,7 +28,6 @@ public class KubernetesServiceImpl implements KubernetesService {
      */
     private static final int MAX_POD_COUNT = 4;
 
-    // get pod count!
     private int metricsPodCount;
 
     public void checkPods() {
@@ -72,6 +71,11 @@ public class KubernetesServiceImpl implements KubernetesService {
         }
         LOGGER.info("Attempting to scale down {} service to {} instances", deploymentName, scaleTo);
         scaleDeployment(scaleTo);
+    }
+
+    @Override
+    public int getMetricsPodCount() {
+        return this.metricsPodCount;
     }
 
     private void scaleDeployment(int replicas) {

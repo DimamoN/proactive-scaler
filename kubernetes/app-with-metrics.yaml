@@ -20,10 +20,10 @@ spec:
         - containerPort: 8081
         resources:
           requests:
-            cpu: 200m
+            cpu: 400m
             memory: 300Mi
           limits:
-            cpu: 200m
+            cpu: 400m
             memory: 350Mi
         env:
         - name: JAVA_OPTS
@@ -41,7 +41,7 @@ spec:
         - name: DB_PASSWORD
           value: "root"
         - name: BASIC_CPU_LOAD
-          value: "1000000"
+          value: "30000"
         - name: BASIC_RAM_LOAD
           value: "10000"
         - name: NODE_NAME

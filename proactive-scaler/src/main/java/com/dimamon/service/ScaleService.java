@@ -42,8 +42,10 @@ public class ScaleService {
 
     // todo: use env vars
     private static final int NODE_MAX_CPU = 2000;
-    private static final int POD_MAX_CPU = 200;
+    private static final int POD_MAX_CPU = 400;
     private static double WORKLOAD_RATE = NODE_MAX_CPU / POD_MAX_CPU;
+
+    private static final String APP_NAME = "scaler-app";
 
     @Autowired
     private MeasurementsRepo measurementsRepo;
@@ -58,11 +60,12 @@ public class ScaleService {
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         kubernetesService.checkPods();
-        
+
+        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
+
         LOGGER.info("### Checking metrics task = {}", new Date());
         List<WorkloadPoint> allMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT);
 
-        // in progress: predict workload
         List<Double> cpuMeasurements = allMeasurements.stream()
                 .map(WorkloadPoint::getProcessCpu)
                 .collect(Collectors.toList());
@@ -71,7 +74,7 @@ public class ScaleService {
         double avgPredictionWeighted = avgPrediction * WORKLOAD_RATE;
         LOGGER.info("Avg pred {} * rate ({}) = {}", avgPrediction, WORKLOAD_RATE, avgPredictionWeighted);
 
-        measurementsRepo.writePrediction("all", avgPredictionWeighted);
+        measurementsRepo.writePrediction(APP_NAME, avgPredictionWeighted);
 
         if (shouldScaleUp(avgPredictionWeighted)) {
             LOGGER.info("Avg prediction {}% > {}%", showValue(avgPredictionWeighted), SCALE_UP_THRESHOLD);
