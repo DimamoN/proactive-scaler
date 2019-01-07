@@ -38,11 +38,14 @@ kubectl scale deployment metrics-app --replicas=[SIZE]
 ```bash
 kubectl autoscale deployment metrics-app --max=3 --cpu-percent=80
 ```
+### Delete kubernetes reactive autoscaling
+```bash
+kubectl delete horizontalpodautoscaler metrics-app 
+```
 
 ### Clear database
 ```
 ./clearDatabase.sh
-
 ```
 
 ### Queries for grafana

@@ -26,9 +26,8 @@ public class KubernetesServiceImpl implements KubernetesService {
     /**
      * Max pods count
      */
-    private int maxPodCount = 3;
+    private static final int MAX_POD_COUNT = 4;
 
-    // get pod count!
     private int metricsPodCount;
 
     public void checkPods() {
@@ -56,8 +55,8 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public void scaleUpService() {
         int scaleTo = metricsPodCount + 1;
-        if (scaleTo > maxPodCount) {
-            LOGGER.warn("Can't scale more, limit is {}", scaleTo);
+        if (scaleTo > MAX_POD_COUNT) {
+            LOGGER.warn("Can't scale more, limit is {}", MAX_POD_COUNT);
             return;
         }
         LOGGER.info("Attempting to scale up {} service to {} instances", deploymentName, scaleTo);
@@ -74,22 +73,16 @@ public class KubernetesServiceImpl implements KubernetesService {
         scaleDeployment(scaleTo);
     }
 
+    @Override
+    public int getMetricsPodCount() {
+        return this.metricsPodCount;
+    }
+
     private void scaleDeployment(int replicas) {
         try (final KubernetesClient client = new DefaultKubernetesClient()) {
-
-//            client.extensions().deployments()
-//                    .inNamespace(namespace)
-//                    .list().getItems().forEach(d -> {
-//                if (d.getMetadata().getName().equals(deploymentName)) {
-//                    LOGGER.info("### DEPLOYMENT FOUND {}", d.getMetadata().getName());
-//                }
-//            });
-
-            // scale
             client.extensions().deployments()
                     .inNamespace(namespace).withName(deploymentName)
                     .edit().editSpec().withReplicas(replicas).endSpec().done();
-
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
         }

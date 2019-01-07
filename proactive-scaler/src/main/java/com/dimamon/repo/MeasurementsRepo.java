@@ -68,6 +68,17 @@ public class MeasurementsRepo {
         influxDB.write(batchPoints);
     }
 
+    public void writePodCount(final String instanceName, int podCount) {
+        BatchPoints batchPoints = getBatchPoints();
+        Point point = Point.measurement("pods")
+                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                .addField("savedFrom", instanceName)
+                .addField("podCount", podCount)
+                .build();
+        batchPoints.point(point);
+        influxDB.write(batchPoints);
+    }
+
     public List<WorkloadPoint> getLoadMetrics() {
         QueryResult queryResult = influxDB.query(new Query("select * from workload", dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();

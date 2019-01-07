@@ -27,6 +27,9 @@ public class MeasurementsRepo {
 
     private InfluxDB influxDB;
 
+    @Value("${kubernetes.pod_name}")
+    private String podName;
+
     @Value("${db.username}")
     private String username;
 
@@ -79,6 +82,7 @@ public class MeasurementsRepo {
         Point point = Point.measurement("connection")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("id", id)
+                .addField("instanceName", podName)
                 .addField("method", method)
                 .build();
         batchPoints.point(point);
@@ -86,7 +90,7 @@ public class MeasurementsRepo {
     }
 
 
-    public void measureLoad(final String instanceName, double cpuLoad, long freeMemory, long totalMemory) {
+    public void measureLoad(final String instanceName, double cpuLoad, double cpuProcessLoad, long freeMemory, long totalMemory) {
         if (!metricsEnabled) {
             return;
         }
@@ -95,6 +99,7 @@ public class MeasurementsRepo {
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("instanceName", instanceName)
                 .addField("cpu", cpuLoad)
+                .addField("process_cpu", cpuProcessLoad)
                 .addField("free_ram", freeMemory)
                 .addField("total_ram", totalMemory)
                 .build();

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.RandomAccess;
 import java.util.stream.Collectors;
 
 import static com.dimamon.utils.StringUtils.showValue;
@@ -39,6 +40,12 @@ public class ScaleService {
     private static final int SCALE_UP_THRESHOLD = 75;
     private static final int SCALE_DOWN_THRESHOLD = 25;
 
+    // todo: use env vars
+    private static final int NODE_MAX_CPU = 2000;
+    private static final int POD_MAX_CPU = 400;
+    private static double WORKLOAD_RATE = NODE_MAX_CPU / POD_MAX_CPU;
+
+    private static final String APP_NAME = "scaler-app";
 
     @Autowired
     private MeasurementsRepo measurementsRepo;
@@ -53,26 +60,30 @@ public class ScaleService {
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         kubernetesService.checkPods();
-        
+
+        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
+
         LOGGER.info("### Checking metrics task = {}", new Date());
         List<WorkloadPoint> allMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT);
 
-        // in progress: predict workload
         List<Double> cpuMeasurements = allMeasurements.stream()
-                .map(WorkloadPoint::getCpu)
+                .map(WorkloadPoint::getProcessCpu)
                 .collect(Collectors.toList());
 
         double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
-        measurementsRepo.writePrediction("all", avgPrediction);
+        double avgPredictionWeighted = avgPrediction * WORKLOAD_RATE;
+        LOGGER.info("Avg pred {} * rate ({}) = {}", avgPrediction, WORKLOAD_RATE, avgPredictionWeighted);
 
-        if (shouldScaleUp(avgPrediction)) {
-            LOGGER.info("Avg prediction {}% > {}%", showValue(avgPrediction), SCALE_UP_THRESHOLD);
+        measurementsRepo.writePrediction(APP_NAME, avgPredictionWeighted);
+
+        if (shouldScaleUp(avgPredictionWeighted)) {
+            LOGGER.info("Avg prediction {}% > {}%", showValue(avgPredictionWeighted), SCALE_UP_THRESHOLD);
             kubernetesService.scaleUpService();
         } else if (shouldScaleDown(avgPrediction)) {
-            LOGGER.info("Avg prediction {}% < {}%", showValue(avgPrediction), SCALE_DOWN_THRESHOLD);
+            LOGGER.info("Avg prediction {}% < {}%", showValue(avgPredictionWeighted), SCALE_DOWN_THRESHOLD);
             kubernetesService.scaleDownService();
         } else {
-            LOGGER.info("Avg prediction {}%, no need to scale", showValue(avgPrediction));
+            LOGGER.info("Avg prediction {}%, no need to scale", showValue(avgPredictionWeighted));
         }
     }
 

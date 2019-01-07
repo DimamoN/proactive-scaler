@@ -52,18 +52,19 @@ public class MetricsSenderService {
 
         LOGGER.info("# # # # {} / {} ", nodeName, podName);
 
-        LOGGER.info("OS STATS  # cpuLoad={} processLoad={} free_ram={} total_ram={}",
-                stringify(cpuLoad), stringify(cpuLoadProcess), freeMemory, totalMemory);
+        int availableProcessors = resourcesService.getAvailableProcessors();
+
+        LOGGER.info("OS STATS  # cpu count={} cpuLoad={} processLoad={} free_ram={} total_ram={}",
+                availableProcessors, stringify(cpuLoad), stringify(cpuLoadProcess), freeMemory, totalMemory);
 
         long freeJVMMem = resourcesService.getFreeJVMMemory();
         long maxJVMMem = resourcesService.getMaxJVMMemory();
         long totalJVMMem = resourcesService.getTotalJVMMemory();
-        int availableProcessors = resourcesService.getAvailableProcessors();
 
         LOGGER.info("JVM STATS # free/total/max jvm_ram=[{}/{}/{}]",
                 freeJVMMem, totalJVMMem, maxJVMMem);
 
-        measurementsRepo.measureLoad(podName, cpuLoad, freeMemory, totalMemory);
+        measurementsRepo.measureLoad(podName, cpuLoad, cpuLoadProcess, freeMemory, totalMemory);
         measurementsRepo.measureJVMLoad(podName, freeJVMMem, totalJVMMem, maxJVMMem);
     }
 
