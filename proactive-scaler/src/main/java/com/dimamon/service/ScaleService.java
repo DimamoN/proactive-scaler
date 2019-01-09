@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.RandomAccess;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 import static com.dimamon.utils.StringUtils.showValue;
@@ -40,6 +40,8 @@ public class ScaleService {
     private static final int SCALE_UP_THRESHOLD = 80;
     private static final int SCALE_DOWN_THRESHOLD = 25;
 
+    private Boolean proactive = false;
+
     private static final String APP_NAME = "scaler-app";
 
     @Autowired
@@ -61,20 +63,34 @@ public class ScaleService {
                 .stream().map(WorkloadPoint::getPodCpu)
                 .collect(Collectors.toList());
 
-        double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
-        LOGGER.info("Avg pred {} = {}", avgPrediction, avgPrediction);
-
-        measurementsRepo.writePrediction(APP_NAME, avgPrediction);
         measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
 
-        if (shouldScaleUp(avgPrediction)) {
-            LOGGER.info("Avg prediction {}% > {}%", showValue(avgPrediction), SCALE_UP_THRESHOLD);
+        if (proactive) {
+            LOGGER.info("PROACTIVE");
+            double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
+            measurementsRepo.writePrediction(APP_NAME, avgPrediction);
+            scaleTask(avgPrediction);
+        } else {
+            LOGGER.info("REACTIVE");
+            OptionalDouble average = cpuMeasurements.stream().mapToDouble(a -> a).average();
+            if (average.isPresent()) {
+                scaleTask(average.getAsDouble());
+            } else {
+                LOGGER.error("Can't calculate average and do scale task");
+            }
+        }
+
+    }
+
+    private void scaleTask(double averageResult) {
+        if (shouldScaleUp(averageResult)) {
+            LOGGER.info("Avg result {}% > {}%", showValue(averageResult), SCALE_UP_THRESHOLD);
             kubernetesService.scaleUpService();
-        } else if (shouldScaleDown(avgPrediction)) {
-            LOGGER.info("Avg prediction {}% < {}%", showValue(avgPrediction), SCALE_DOWN_THRESHOLD);
+        } else if (shouldScaleDown(averageResult)) {
+            LOGGER.info("Avg result {}% < {}%", showValue(averageResult), SCALE_DOWN_THRESHOLD);
             kubernetesService.scaleDownService();
         } else {
-            LOGGER.info("Avg prediction {}%, no need to scale", showValue(avgPrediction));
+            LOGGER.info("Avg result {}%, no need to scale", showValue(averageResult));
         }
     }
 
