@@ -17,6 +17,9 @@ public class WorkloadPoint {
     @Column(name = "process_cpu")
     private Double processCpu;
 
+    @Column(name = "pod_cpu")
+    private Double podCpu;
+
     @Column(name = "free_ram")
     private Integer freeRam;
 
@@ -53,6 +56,14 @@ public class WorkloadPoint {
         this.processCpu = processCpu;
     }
 
+    public Double getPodCpu() {
+        return podCpu;
+    }
+
+    public void setPodCpu(Double podCpu) {
+        this.podCpu = podCpu;
+    }
+
     public Integer getFreeRam() {
         return freeRam;
     }
@@ -83,6 +94,7 @@ public class WorkloadPoint {
                 "time=" + time +
                 ", cpu=" + cpu +
                 ", processCpu=" + processCpu +
+                ", podCpu=" + podCpu +
                 ", freeRam=" + freeRam +
                 ", totalRam=" + totalRam +
                 ", instanceName='" + instanceName + '\'' +

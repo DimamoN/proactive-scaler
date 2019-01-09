@@ -26,6 +26,14 @@ public class MetricsSenderService {
     @Value("${kubernetes.pod_name}")
     private String podName;
 
+    @Value("${kubernetes.pod_cpu}")
+    private Integer podCpuLimit;
+
+    @Value("${kubernetes.node_cpu}")
+    private Integer nodeCpuLimit;
+
+    private double workloadRate;
+
     @Autowired
     private ResourcesService resourcesService;
 
@@ -40,6 +48,11 @@ public class MetricsSenderService {
         if (podName == null) {
             podName = "app";
         }
+        if (podCpuLimit != null && nodeCpuLimit != null) {
+            this.workloadRate = nodeCpuLimit / podCpuLimit;
+        } else {
+            workloadRate = 1.0;
+        }
         LOGGER.info("NODE={}, POD={}", nodeName, podName);
     }
 
@@ -53,9 +66,11 @@ public class MetricsSenderService {
         LOGGER.info("# # # # {} / {} ", nodeName, podName);
 
         int availableProcessors = resourcesService.getAvailableProcessors();
+        double podLoad = cpuLoadProcess * workloadRate;
 
-        LOGGER.info("OS STATS  # cpu count={} cpuLoad={} processLoad={} free_ram={} total_ram={}",
-                availableProcessors, stringify(cpuLoad), stringify(cpuLoadProcess), freeMemory, totalMemory);
+        LOGGER.info("OS STATS  # cpu count={} cpuLoad={} processLoad={} podLoad={} free_ram={} total_ram={}",
+                availableProcessors, stringify(cpuLoad), stringify(cpuLoadProcess),
+                stringify(podLoad), freeMemory, totalMemory);
 
         long freeJVMMem = resourcesService.getFreeJVMMemory();
         long maxJVMMem = resourcesService.getMaxJVMMemory();
@@ -64,7 +79,7 @@ public class MetricsSenderService {
         LOGGER.info("JVM STATS # free/total/max jvm_ram=[{}/{}/{}]",
                 freeJVMMem, totalJVMMem, maxJVMMem);
 
-        measurementsRepo.measureLoad(podName, cpuLoad, cpuLoadProcess, freeMemory, totalMemory);
+        measurementsRepo.measureLoad(podName, cpuLoad, cpuLoadProcess, podLoad, freeMemory, totalMemory);
         measurementsRepo.measureJVMLoad(podName, freeJVMMem, totalJVMMem, maxJVMMem);
     }
 

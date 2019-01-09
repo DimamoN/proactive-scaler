@@ -9,7 +9,9 @@ db:
 
 kubernetes:
   node_name: ${NODE_NAME}
+  node_cpu: ${NODE_CPU_LIMIT}
   pod_name: ${POD_NAME}
+  pod_cpu: ${POD_CPU_LIMIT}
 
 workload:
   basic_cpu: ${BASIC_CPU_LOAD}

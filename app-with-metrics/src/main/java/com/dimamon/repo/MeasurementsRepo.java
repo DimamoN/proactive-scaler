@@ -90,7 +90,8 @@ public class MeasurementsRepo {
     }
 
 
-    public void measureLoad(final String instanceName, double cpuLoad, double cpuProcessLoad, long freeMemory, long totalMemory) {
+    public void measureLoad(final String instanceName, double cpuLoad, double cpuProcessLoad, double podLoad,
+                            long freeMemory, long totalMemory) {
         if (!metricsEnabled) {
             return;
         }
@@ -100,6 +101,7 @@ public class MeasurementsRepo {
                 .addField("instanceName", instanceName)
                 .addField("cpu", cpuLoad)
                 .addField("process_cpu", cpuProcessLoad)
+                .addField("pod_cpu", podLoad)
                 .addField("free_ram", freeMemory)
                 .addField("total_ram", totalMemory)
                 .build();

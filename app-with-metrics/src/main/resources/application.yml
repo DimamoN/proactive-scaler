@@ -5,6 +5,12 @@ spring:
 server:
     port: 8081
 
+kubernetes:
+    node_name: host
+    node_cpu: 0
+    pod_name: no_pod
+    pod_cpu: 0
+
 workload:
     basic_cpu: 100000000
     basic_ram: 10000

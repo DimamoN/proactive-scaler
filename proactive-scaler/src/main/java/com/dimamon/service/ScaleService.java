@@ -37,13 +37,8 @@ public class ScaleService {
     private static final int FORECAST_FOR = 6 * 2; // 2 minutes
     private static final int LAST_METRICS_COUNT = 6 * 2; // 2 minutes
 
-    private static final int SCALE_UP_THRESHOLD = 75;
+    private static final int SCALE_UP_THRESHOLD = 80;
     private static final int SCALE_DOWN_THRESHOLD = 25;
-
-    // todo: use env vars
-    private static final int NODE_MAX_CPU = 2000;
-    private static final int POD_MAX_CPU = 400;
-    private static double WORKLOAD_RATE = NODE_MAX_CPU / POD_MAX_CPU;
 
     private static final String APP_NAME = "scaler-app";
 
@@ -59,31 +54,27 @@ public class ScaleService {
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
+        LOGGER.info("### Checking metrics task = {}", new Date());
         kubernetesService.checkPods();
 
-        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
-
-        LOGGER.info("### Checking metrics task = {}", new Date());
-        List<WorkloadPoint> allMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT);
-
-        List<Double> cpuMeasurements = allMeasurements.stream()
-                .map(WorkloadPoint::getProcessCpu)
+        List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT)
+                .stream().map(WorkloadPoint::getPodCpu)
                 .collect(Collectors.toList());
 
         double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
-        double avgPredictionWeighted = avgPrediction * WORKLOAD_RATE;
-        LOGGER.info("Avg pred {} * rate ({}) = {}", avgPrediction, WORKLOAD_RATE, avgPredictionWeighted);
+        LOGGER.info("Avg pred {} = {}", avgPrediction, avgPrediction);
 
-        measurementsRepo.writePrediction(APP_NAME, avgPredictionWeighted);
+        measurementsRepo.writePrediction(APP_NAME, avgPrediction);
+        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
 
-        if (shouldScaleUp(avgPredictionWeighted)) {
-            LOGGER.info("Avg prediction {}% > {}%", showValue(avgPredictionWeighted), SCALE_UP_THRESHOLD);
+        if (shouldScaleUp(avgPrediction)) {
+            LOGGER.info("Avg prediction {}% > {}%", showValue(avgPrediction), SCALE_UP_THRESHOLD);
             kubernetesService.scaleUpService();
         } else if (shouldScaleDown(avgPrediction)) {
-            LOGGER.info("Avg prediction {}% < {}%", showValue(avgPredictionWeighted), SCALE_DOWN_THRESHOLD);
+            LOGGER.info("Avg prediction {}% < {}%", showValue(avgPrediction), SCALE_DOWN_THRESHOLD);
             kubernetesService.scaleDownService();
         } else {
-            LOGGER.info("Avg prediction {}%, no need to scale", showValue(avgPredictionWeighted));
+            LOGGER.info("Avg prediction {}%, no need to scale", showValue(avgPrediction));
         }
     }
 

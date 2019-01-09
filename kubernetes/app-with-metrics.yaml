@@ -22,6 +22,7 @@ spec:
           requests:
             cpu: 400m
             memory: 300Mi
+            # Change only with POD_CPU_LIMIT
           limits:
             cpu: 400m
             memory: 350Mi
@@ -44,6 +45,10 @@ spec:
           value: "30000"
         - name: BASIC_RAM_LOAD
           value: "10000"
+        - name: NODE_CPU_LIMIT
+          value: "2000"
+        - name: POD_CPU_LIMIT
+          value: "400"
         - name: NODE_NAME
           valueFrom:
             fieldRef:
