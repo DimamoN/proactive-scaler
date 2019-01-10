@@ -26,7 +26,7 @@ public class KubernetesServiceImpl implements KubernetesService {
     /**
      * Max pods count
      */
-    private static final int MAX_POD_COUNT = 4;
+    private static final int MAX_POD_COUNT = 3;
 
     private int metricsPodCount;
 
