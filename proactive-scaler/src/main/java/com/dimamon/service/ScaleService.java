@@ -38,6 +38,8 @@ public class ScaleService {
     private static final int FORECAST_FOR = 6 * 2; // 2 minutes
     private static final int LAST_METRICS_COUNT = 6 * 2; // 2 minutes
 
+    private static final int PREDICTION_FOR_NOW = 4; // FORECAST_FOR / CHECK_EVERY = 2 min / 30 sec = 4;
+
     private static final int SCALE_UP_THRESHOLD = 80;
     private static final int SCALE_DOWN_THRESHOLD = 25;
 
@@ -91,9 +93,10 @@ public class ScaleService {
 
     private void writePredictionStats(double averageWorkload) {
         List<WorkloadPredictionPoint> lastPredictions = measurementsRepo
-                .getLastWorkloadPredictions(LAST_METRICS_COUNT);
-        if (lastPredictions.size() == LAST_METRICS_COUNT) {
+                .getLastWorkloadPredictions(PREDICTION_FOR_NOW);
+        if (lastPredictions.size() == PREDICTION_FOR_NOW) {
             double predictionForNow = lastPredictions.get(0).getCpu();
+            LOGGER.info("Prediction stats. ESTIMATED={}, REAL={}", predictionForNow, averageWorkload);
             measurementsRepo.writeCurrentPrediction(APP_NAME, averageWorkload, predictionForNow);
         } else {
             LOGGER.error("Can't write predictionForNow : there no prediction for current moment");
