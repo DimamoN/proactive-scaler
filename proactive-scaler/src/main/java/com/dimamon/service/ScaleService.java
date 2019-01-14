@@ -2,6 +2,7 @@ package com.dimamon.service;
 
 
 import com.dimamon.entities.WorkloadPoint;
+import com.dimamon.entities.WorkloadPredictionPoint;
 import com.dimamon.repo.MeasurementsRepo;
 import com.dimamon.service.kubernetes.KubernetesService;
 import com.dimamon.service.predict.PredictorService;
@@ -40,7 +41,7 @@ public class ScaleService {
     private static final int SCALE_UP_THRESHOLD = 80;
     private static final int SCALE_DOWN_THRESHOLD = 25;
 
-    private Boolean proactive = false;
+    private Boolean proactive = true;
 
     private static final String APP_NAME = "scaler-app";
 
@@ -56,30 +57,47 @@ public class ScaleService {
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
+
         LOGGER.info("### Checking metrics task = {}", new Date());
         kubernetesService.checkPods();
+        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
 
         List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(LAST_METRICS_COUNT)
                 .stream().map(WorkloadPoint::getPodCpu)
                 .collect(Collectors.toList());
-
-        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
+        OptionalDouble averageWorkload = cpuMeasurements.stream().mapToDouble(a -> a).average();
 
         if (proactive) {
             LOGGER.info("PROACTIVE");
+            if (averageWorkload.isPresent()) {
+                writePredictionStats(averageWorkload.getAsDouble());
+            } else {
+                LOGGER.error("Can't write predictionForNow : average workload calculation error");
+            }
+
             double avgPrediction = predictorService.averagePrediction(FORECAST_FOR, cpuMeasurements);
             measurementsRepo.writePrediction(APP_NAME, avgPrediction);
             scaleTask(avgPrediction);
+
         } else {
             LOGGER.info("REACTIVE");
-            OptionalDouble average = cpuMeasurements.stream().mapToDouble(a -> a).average();
-            if (average.isPresent()) {
-                scaleTask(average.getAsDouble());
+            if (averageWorkload.isPresent()) {
+                scaleTask(averageWorkload.getAsDouble());
             } else {
                 LOGGER.error("Can't calculate average and do scale task");
             }
         }
+    }
 
+    private void writePredictionStats(double averageWorkload) {
+        List<WorkloadPredictionPoint> lastPredictions = measurementsRepo
+                .getLastWorkloadPredictions(LAST_METRICS_COUNT);
+        if (lastPredictions.size() == LAST_METRICS_COUNT) {
+            double predictionForNow = lastPredictions.get(0).getCpu();
+            measurementsRepo.writeCurrentPrediction(APP_NAME, averageWorkload, predictionForNow);
+        } else {
+            LOGGER.error("Can't write predictionForNow : there no prediction for current moment");
+        }
     }
 
     private void scaleTask(double averageResult) {

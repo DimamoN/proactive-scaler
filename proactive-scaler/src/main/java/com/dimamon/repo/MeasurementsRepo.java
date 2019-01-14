@@ -2,6 +2,7 @@ package com.dimamon.repo;
 
 import com.dimamon.entities.WorkloadJVMPoint;
 import com.dimamon.entities.WorkloadPoint;
+import com.dimamon.entities.WorkloadPredictionPoint;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
@@ -79,12 +80,35 @@ public class MeasurementsRepo {
         influxDB.write(batchPoints);
     }
 
+    /**
+     * @param instanceName
+     * @param currentMediumWorkload - medium workload
+     * @param predictionForNow - from past for current time moment
+     */
+    public void writeCurrentPrediction(final String instanceName,
+                                       double currentMediumWorkload,
+                                       double predictionForNow) {
+        BatchPoints batchPoints = getBatchPoints();
+        Point point = Point.measurement("prediction_stats")
+                .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                .addField("savedFrom", instanceName)
+                .addField("currentMediumWorkload", currentMediumWorkload)
+                .addField("predictionForNow", predictionForNow)
+                .build();
+        batchPoints.point(point);
+        influxDB.write(batchPoints);
+    }
+
     public List<WorkloadPoint> getLoadMetrics() {
         QueryResult queryResult = influxDB.query(new Query("select * from workload", dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
         return resultMapper.toPOJO(queryResult, WorkloadPoint.class);
     }
 
+    /**
+     * @param count - last metrics
+     * @return list with last "count" metrics
+     */
     public List<WorkloadPoint> getLastLoadMetrics(int count) {
         String query = "SELECT * FROM workload ORDER BY time DESC LIMIT " + count;
         QueryResult queryResult = influxDB.query(new Query(query, dbName));
@@ -98,6 +122,19 @@ public class MeasurementsRepo {
         QueryResult queryResult = influxDB.query(new Query("select * from workload_jvm", dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
         return resultMapper.toPOJO(queryResult, WorkloadJVMPoint.class);
+    }
+
+    /**
+     * @param count - last workload predictions
+     * @return list with last "count" predictions
+     */
+    public List<WorkloadPredictionPoint> getLastWorkloadPredictions(int count) {
+        String query = "SELECT * FROM workload_prediction ORDER BY time DESC LIMIT " + count;
+        QueryResult queryResult = influxDB.query(new Query(query, dbName));
+        InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
+        List<WorkloadPredictionPoint> workloadPoints = resultMapper.toPOJO(queryResult, WorkloadPredictionPoint.class);
+        Collections.reverse(workloadPoints);
+        return workloadPoints;
     }
 
     private BatchPoints getBatchPoints() {

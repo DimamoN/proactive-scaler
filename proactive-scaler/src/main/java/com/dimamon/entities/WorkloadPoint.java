@@ -17,17 +17,22 @@ public class WorkloadPoint {
     @Column(name = "process_cpu")
     private Double processCpu;
 
+    /**
+     * Workload in human readable form from 0 to ~100
+     */
     @Column(name = "pod_cpu")
     private Double podCpu;
+
+    @Column(name = "instanceName")
+    private String instanceName;
+
+    // not used
 
     @Column(name = "free_ram")
     private Integer freeRam;
 
     @Column(name = "total_ram")
     private Integer totalRam;
-
-    @Column(name = "instanceName")
-    private String instanceName;
 
     public WorkloadPoint() {
     }
