@@ -35,15 +35,24 @@ public class ScaleService {
     /**
      * 1 unit is 10 seconds, so 6 * 5 = 1 min
      */
-    private static final int FORECAST_FOR = 6 * 2; // 2 minutes
+
+
+    private static final int FORECAST_FOR_1 = 6;
+    private static final int PREDICTION_FOR_NOW_1 = 1;
+
+    private static final int FORECAST_FOR_2 = 6 * 2;
+    private static final int PREDICTION_FOR_NOW_2 = 2;
+
+
+    private static final int FORECAST_FOR = FORECAST_FOR_1;
     private static final int LAST_METRICS_COUNT = 6 * 2; // 2 minutes
 
-    private static final int PREDICTION_FOR_NOW = 4; // FORECAST_FOR / CHECK_EVERY = 2 min / 30 sec = 4;
+    private static final int PREDICTION_FOR_NOW = PREDICTION_FOR_NOW_1; // FORECAST_FOR / CHECK_EVERY = 1 min / 30 sec = 2 / 2 (middle);
 
     private static final int SCALE_UP_THRESHOLD = 80;
     private static final int SCALE_DOWN_THRESHOLD = 25;
 
-    private Boolean proactive = true;
+    private Boolean proactive = false;
 
     private static final String APP_NAME = "scaler-app";
 
