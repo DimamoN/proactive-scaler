@@ -46,7 +46,6 @@ public class ScaleService {
         int forecastFor; // in scale tasks (only for proactive)
         int forecastBasedOn; // in scale tasks
 
-        // todo: implement
         int treshHoldAfterScaling = 1; // how many scale tasks will be ignored
 
         int predictionForNow; // in scale tasks  (forecastFor / checkEvery) / 2
@@ -55,6 +54,10 @@ public class ScaleService {
         int scaleDownTreshold; // in percents
 
         ScalerConfig() {
+        }
+
+        String proactiveString() {
+            return this.proactive ? "proactive" : "reactive";
         }
 
         void setProactive(boolean proactive) {
@@ -94,6 +97,8 @@ public class ScaleService {
 
     private static ScalerConfig config = proactiveClassic;
 
+    private static int ignoreScaling = 0;
+
     @Autowired
     private MeasurementsRepo measurementsRepo;
 
@@ -104,10 +109,10 @@ public class ScaleService {
     @Autowired
     private KubernetesService kubernetesService;
 
+
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
-
-        LOGGER.info("### Checking metrics task = {}", new Date());
+        LOGGER.info("### Checking metrics task = {} | {}", new Date(), config.proactiveString());
         kubernetesService.checkPods();
         measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
 
@@ -116,20 +121,22 @@ public class ScaleService {
                 .collect(Collectors.toList());
         OptionalDouble averageWorkload = cpuMeasurements.stream().mapToDouble(a -> a).average();
 
+        if (ignoreScaling()) {
+            LOGGER.info("Ignoring scaling");
+            return;
+        }
+
         if (config.proactive) {
-            LOGGER.info("PROACTIVE");
             if (averageWorkload.isPresent()) {
                 writePredictionStats(averageWorkload.getAsDouble());
             } else {
                 LOGGER.error("Can't write predictionForNow : average workload calculation error");
             }
-
             double avgPrediction = predictorService.averagePrediction(config.forecastFor, cpuMeasurements);
             measurementsRepo.writePrediction(APP_NAME, avgPrediction);
             scaleTask(avgPrediction);
 
         } else {
-            LOGGER.info("REACTIVE");
             if (averageWorkload.isPresent()) {
                 scaleTask(averageWorkload.getAsDouble());
             } else {
@@ -150,13 +157,27 @@ public class ScaleService {
         }
     }
 
+    private static void setIgnoreScaling() {
+        ignoreScaling = config.treshHoldAfterScaling;
+    }
+
+    private static boolean ignoreScaling() {
+        return ignoreScaling-- > 0;
+    }
+
     private void scaleTask(double averageResult) {
         if (shouldScaleUp(averageResult)) {
             LOGGER.info("Avg result {}% > {}%", showValue(averageResult), config.scaleUpTreshold);
-            kubernetesService.scaleUpService();
+            boolean scaled = kubernetesService.scaleUpService();
+            if (scaled) {
+                setIgnoreScaling();
+            }
         } else if (shouldScaleDown(averageResult)) {
             LOGGER.info("Avg result {}% < {}%", showValue(averageResult), config.scaleDownTreshold);
-            kubernetesService.scaleDownService();
+            boolean scaled = kubernetesService.scaleDownService();
+            if (scaled) {
+                setIgnoreScaling();
+            }
         } else {
             LOGGER.info("Avg result {}%, no need to scale", showValue(averageResult));
         }

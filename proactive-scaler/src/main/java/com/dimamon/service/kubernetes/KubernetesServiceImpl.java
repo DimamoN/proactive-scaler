@@ -53,24 +53,26 @@ public class KubernetesServiceImpl implements KubernetesService {
     }
 
     @Override
-    public void scaleUpService() {
+    public boolean scaleUpService() {
         int scaleTo = metricsPodCount + 1;
         if (scaleTo > MAX_POD_COUNT) {
             LOGGER.warn("Can't scale more, limit is {}", MAX_POD_COUNT);
-            return;
+            return false;
         }
         LOGGER.info("Attempting to scale up {} service to {} instances", deploymentName, scaleTo);
         scaleDeployment(scaleTo);
+        return true;
     }
 
     @Override
-    public void scaleDownService() {
+    public boolean scaleDownService() {
         int scaleTo = metricsPodCount - 1;
         if (scaleTo <= 0) {
-            return;
+            return false;
         }
         LOGGER.info("Attempting to scale down {} service to {} instances", deploymentName, scaleTo);
         scaleDeployment(scaleTo);
+        return true;
     }
 
     @Override

@@ -2,9 +2,15 @@ package com.dimamon.service.kubernetes;
 
 public interface KubernetesService {
 
-    void scaleUpService();
+    /**
+     * @return true - successful scale up
+     */
+    boolean scaleUpService();
 
-    void scaleDownService();
+    /**
+     * @return true - successful scale down
+     */
+    boolean scaleDownService();
 
     void checkPods();
 
