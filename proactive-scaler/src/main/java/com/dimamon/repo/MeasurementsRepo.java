@@ -75,7 +75,7 @@ public class MeasurementsRepo {
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("savedFrom", instanceName)
                 .addField("podsCount", podCount)
-                .addField("podsReady", podReadyCount)
+                .addField("podsReadyCount", podReadyCount)
                 .build();
         batchPoints.point(point);
         influxDB.write(batchPoints);

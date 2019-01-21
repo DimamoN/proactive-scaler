@@ -43,9 +43,8 @@ public class KubernetesServiceImpl implements KubernetesService {
                         final String podName = pod.getMetadata().getName();
                         if (pod.getStatus().getPhase().equals("Running")) {
                             podReadyCount.incrementAndGet();
-                        } else {
-                            podCount.getAndIncrement();
                         }
+                        podCount.getAndIncrement();
                         foundPods.add(podName);
                     }
                 }

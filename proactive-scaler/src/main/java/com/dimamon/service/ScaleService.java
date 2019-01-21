@@ -122,11 +122,6 @@ public class ScaleService {
                 .collect(Collectors.toList());
         OptionalDouble averageWorkload = cpuMeasurements.stream().mapToDouble(a -> a).average();
 
-        if (ignoreScaling()) {
-            LOGGER.info("Ignoring scaling");
-            return;
-        }
-
         if (config.proactive) {
             if (averageWorkload.isPresent()) {
                 writePredictionStats(averageWorkload.getAsDouble());
@@ -167,6 +162,12 @@ public class ScaleService {
     }
 
     private void scaleTask(double averageResult) {
+
+        if (ignoreScaling()) {
+            LOGGER.info("Ignoring scaling");
+            return;
+        }
+
         if (shouldScaleUp(averageResult)) {
             LOGGER.info("Avg result {}% > {}%", showValue(averageResult), config.scaleUpTreshold);
             boolean scaled = kubernetesService.scaleUpService();
