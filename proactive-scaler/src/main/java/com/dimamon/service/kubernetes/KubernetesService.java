@@ -15,4 +15,6 @@ public interface KubernetesService {
     void checkPods();
 
     int getMetricsPodCount();
+
+    int getMetricsPodReadyCount();
 }

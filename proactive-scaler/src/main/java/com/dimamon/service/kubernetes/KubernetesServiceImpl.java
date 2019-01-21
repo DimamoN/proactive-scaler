@@ -29,18 +29,24 @@ public class KubernetesServiceImpl implements KubernetesService {
     private static final int MAX_POD_COUNT = 3;
 
     private int metricsPodCount;
+    private int metricsPodReadyCount;
 
     public void checkPods() {
-
         AtomicInteger podCount = new AtomicInteger();
+        AtomicInteger podReadyCount = new AtomicInteger();
         List<String> foundPods = new ArrayList<>();
 
         try (final KubernetesClient client = new DefaultKubernetesClient()) {
             client.pods().list().getItems().forEach(pod -> {
                 if (pod.getMetadata().getNamespace().equals("default")) {
                     if (pod.getMetadata().getName().startsWith(podPrefix)) {
-                        podCount.getAndIncrement();
-                        foundPods.add(pod.getMetadata().getName());
+                        final String podName = pod.getMetadata().getName();
+                        if (pod.getStatus().getPhase().equals("Running")) {
+                            podReadyCount.incrementAndGet();
+                        } else {
+                            podCount.getAndIncrement();
+                        }
+                        foundPods.add(podName);
                     }
                 }
             });
@@ -48,8 +54,11 @@ public class KubernetesServiceImpl implements KubernetesService {
             LOGGER.error(ex.getMessage(), ex);
         }
 
-        metricsPodCount = podCount.get();
-        LOGGER.info("There are {} {} pods = {}", metricsPodCount, podPrefix, foundPods.toString());
+        this.metricsPodCount = podCount.get();
+        this.metricsPodReadyCount = podReadyCount.get();
+
+        LOGGER.info("There are {}(ready)/{}(all) {} pods = {}",
+                metricsPodReadyCount, metricsPodCount, podPrefix, foundPods.toString());
     }
 
     @Override
@@ -78,6 +87,11 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public int getMetricsPodCount() {
         return this.metricsPodCount;
+    }
+
+    @Override
+    public int getMetricsPodReadyCount() {
+        return this.metricsPodReadyCount;
     }
 
     private void scaleDeployment(int replicas) {

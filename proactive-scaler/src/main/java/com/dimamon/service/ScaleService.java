@@ -114,7 +114,8 @@ public class ScaleService {
     public void checkMetrics() {
         LOGGER.info("### Checking metrics task = {} | {}", new Date(), config.proactiveString());
         kubernetesService.checkPods();
-        measurementsRepo.writePodCount(APP_NAME, kubernetesService.getMetricsPodCount());
+        measurementsRepo.writePodCount(APP_NAME,
+                kubernetesService.getMetricsPodCount(), kubernetesService.getMetricsPodReadyCount());
 
         List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(config.forecastBasedOn)
                 .stream().map(WorkloadPoint::getPodCpu)

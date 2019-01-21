@@ -69,12 +69,13 @@ public class MeasurementsRepo {
         influxDB.write(batchPoints);
     }
 
-    public void writePodCount(final String instanceName, int podCount) {
+    public void writePodCount(final String instanceName, int podCount, int podReadyCount) {
         BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("pods")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("savedFrom", instanceName)
-                .addField("podCount", podCount)
+                .addField("podsCount", podCount)
+                .addField("podsReady", podReadyCount)
                 .build();
         batchPoints.point(point);
         influxDB.write(batchPoints);
