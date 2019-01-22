@@ -1,6 +1,7 @@
 package com.dimamon.service;
 
 
+import com.dimamon.config.ScalerConfig;
 import com.dimamon.entities.WorkloadPoint;
 import com.dimamon.entities.WorkloadPredictionPoint;
 import com.dimamon.repo.MeasurementsRepo;
@@ -33,69 +34,7 @@ public class ScaleService {
     private static final int INITIAL_DELAY = 10 * 1000;
     private static final int CHECK_EVERY = 30 * 1000;
 
-    static class ScalerConfig {
-
-        /**
-         * true - proactive, false - reactive
-         */
-        boolean proactive;
-
-        /**
-         * 1 unit is 10 seconds, so 6 * 5 = 1 min
-         */
-        int forecastFor; // in scale tasks (only for proactive)
-        int forecastBasedOn; // in scale tasks
-
-        int treshHoldAfterScaling = 1; // how many scale tasks will be ignored
-
-        int predictionForNow; // in scale tasks  (forecastFor / checkEvery) / 2
-
-        int scaleUpTreshold; // in percents
-        int scaleDownTreshold; // in percents
-
-        ScalerConfig() {
-        }
-
-        String proactiveString() {
-            return this.proactive ? "proactive" : "reactive";
-        }
-
-        void setProactive(boolean proactive) {
-            this.proactive = proactive;
-        }
-
-        void setScaleTresholds(int scaleUpTreshold, int scaleDownTreshold) {
-            this.scaleUpTreshold = scaleUpTreshold;
-            this.scaleDownTreshold = scaleDownTreshold;
-        }
-
-        void setForecastingParams(int forecastFor, int forecastBasedOn) {
-            this.forecastFor = forecastFor;
-            this.forecastBasedOn = forecastBasedOn;
-        }
-
-        void setPredictionForNow(int predictionForNow) {
-            this.predictionForNow = predictionForNow;
-        }
-    }
-
-    private static ScalerConfig proactiveClassic = new ScalerConfig();
-    {
-        proactiveClassic.setProactive(true);
-        proactiveClassic.setScaleTresholds(80, 25);
-        proactiveClassic.setForecastingParams(6, 12);
-        proactiveClassic.setPredictionForNow(1); // 30 sec
-    }
-
-    private static ScalerConfig reactiveClassic = new ScalerConfig();
-    {
-        reactiveClassic.setProactive(false);
-        reactiveClassic.setScaleTresholds(80, 25);
-        reactiveClassic.setForecastingParams(6, 12);
-        reactiveClassic.setPredictionForNow(1); // 30 sec
-    }
-
-    private static ScalerConfig config = proactiveClassic;
+    private static ScalerConfig config = ScalerConfig.PROACTIVE_V1;
 
     private static int ignoreScaling = 0;
 
@@ -117,18 +56,18 @@ public class ScaleService {
         measurementsRepo.writePodCount(APP_NAME,
                 kubernetesService.getMetricsPodCount(), kubernetesService.getMetricsPodReadyCount());
 
-        List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(config.forecastBasedOn)
+        List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(config.getForecastBasedOn())
                 .stream().map(WorkloadPoint::getPodCpu)
                 .collect(Collectors.toList());
         OptionalDouble averageWorkload = cpuMeasurements.stream().mapToDouble(a -> a).average();
 
-        if (config.proactive) {
+        if (config.isProactive()) {
             if (averageWorkload.isPresent()) {
                 writePredictionStats(averageWorkload.getAsDouble());
             } else {
                 LOGGER.error("Can't write predictionForNow : average workload calculation error");
             }
-            double avgPrediction = predictorService.averagePrediction(config.forecastFor, cpuMeasurements);
+            double avgPrediction = predictorService.averagePrediction(config.getForecastFor(), cpuMeasurements);
             measurementsRepo.writePrediction(APP_NAME, avgPrediction);
             scaleTask(avgPrediction);
 
@@ -143,8 +82,8 @@ public class ScaleService {
 
     private void writePredictionStats(double averageWorkload) {
         List<WorkloadPredictionPoint> lastPredictions = measurementsRepo
-                .getLastWorkloadPredictions(config.predictionForNow);
-        if (lastPredictions.size() == config.predictionForNow) {
+                .getLastWorkloadPredictions(config.getPredictionForNow());
+        if (lastPredictions.size() == config.getPredictionForNow()) {
             double predictionForNow = lastPredictions.get(0).getCpu();
             LOGGER.info("Prediction stats. ESTIMATED={}, REAL={}", predictionForNow, averageWorkload);
             measurementsRepo.writeCurrentPrediction(APP_NAME, averageWorkload, predictionForNow);
@@ -154,7 +93,7 @@ public class ScaleService {
     }
 
     private static void setIgnoreScaling() {
-        ignoreScaling = config.treshHoldAfterScaling;
+        ignoreScaling = config.getTreshHoldAfterScaling();
     }
 
     private static boolean ignoreScaling() {
@@ -168,29 +107,28 @@ public class ScaleService {
             return;
         }
 
+        boolean scaled = false;
         if (shouldScaleUp(averageResult)) {
-            LOGGER.info("Avg result {}% > {}%", showValue(averageResult), config.scaleUpTreshold);
-            boolean scaled = kubernetesService.scaleUpService();
-            if (scaled) {
-                setIgnoreScaling();
-            }
+            LOGGER.info("Avg result {}% > {}%", showValue(averageResult), config.getScaleUpTreshold());
+            scaled = kubernetesService.scaleUpService();
         } else if (shouldScaleDown(averageResult)) {
-            LOGGER.info("Avg result {}% < {}%", showValue(averageResult), config.scaleDownTreshold);
-            boolean scaled = kubernetesService.scaleDownService();
-            if (scaled) {
-                setIgnoreScaling();
-            }
+            LOGGER.info("Avg result {}% < {}%", showValue(averageResult), config.getScaleDownTreshold());
+            scaled = kubernetesService.scaleDownService();
         } else {
             LOGGER.info("Avg result {}%, no need to scale", showValue(averageResult));
+        }
+
+        if (scaled) {
+            setIgnoreScaling();
         }
     }
 
     private boolean shouldScaleUp(double predictedWorkload) {
-        return predictedWorkload > config.scaleUpTreshold;
+        return predictedWorkload > config.getScaleUpTreshold();
     }
 
     private boolean shouldScaleDown(double predictedWorkload) {
-        return predictedWorkload < config.scaleDownTreshold;
+        return predictedWorkload < config.getScaleDownTreshold();
     }
 
 }

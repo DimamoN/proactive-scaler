@@ -1,5 +1,6 @@
 package com.dimamon.service.kubernetes;
 
+import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.slf4j.Logger;
@@ -41,7 +42,8 @@ public class KubernetesServiceImpl implements KubernetesService {
                 if (pod.getMetadata().getNamespace().equals("default")) {
                     if (pod.getMetadata().getName().startsWith(podPrefix)) {
                         final String podName = pod.getMetadata().getName();
-                        if (pod.getStatus().getPhase().equals("Running")) {
+                        List<ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
+                        if (!containerStatuses.isEmpty() && containerStatuses.get(0).getReady()) {
                             podReadyCount.incrementAndGet();
                         }
                         podCount.getAndIncrement();
