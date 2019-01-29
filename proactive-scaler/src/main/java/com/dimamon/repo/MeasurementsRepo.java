@@ -1,6 +1,5 @@
 package com.dimamon.repo;
 
-import com.dimamon.entities.WorkloadJVMPoint;
 import com.dimamon.entities.WorkloadPoint;
 import com.dimamon.entities.WorkloadPredictionPoint;
 import org.influxdb.InfluxDB;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -69,13 +69,15 @@ public class MeasurementsRepo {
         influxDB.write(batchPoints);
     }
 
-    public void writePodCount(final String instanceName, int podCount, int podReadyCount) {
+    public void writePodsInfo(final String instanceName, int podCount,
+                              int podReadyCount, Set<String> podReadyNames) {
         BatchPoints batchPoints = getBatchPoints();
         Point point = Point.measurement("pods")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("savedFrom", instanceName)
                 .addField("podsCount", podCount)
                 .addField("podsReadyCount", podReadyCount)
+                .addField("podsReadyNames", podReadyNames.toString()) // not used really
                 .build();
         batchPoints.point(point);
         influxDB.write(batchPoints);
@@ -100,29 +102,14 @@ public class MeasurementsRepo {
         influxDB.write(batchPoints);
     }
 
-    public List<WorkloadPoint> getLoadMetrics() {
-        QueryResult queryResult = influxDB.query(new Query("select * from workload", dbName));
-        InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
-        return resultMapper.toPOJO(queryResult, WorkloadPoint.class);
-    }
-
-    /**
-     * @param count - last metrics
-     * @return list with last "count" metrics
-     */
-    public List<WorkloadPoint> getLastLoadMetrics(int count) {
-        String query = "SELECT * FROM workload ORDER BY time DESC LIMIT " + count;
+    public List<WorkloadPoint> getLastLoadMetrics(final String podName, int count) {
+        String query = "SELECT * FROM workload where instanceName='%s' ORDER BY time DESC LIMIT " + count;
+        query = String.format(query, podName);
         QueryResult queryResult = influxDB.query(new Query(query, dbName));
         InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
         List<WorkloadPoint> workloadPoints = resultMapper.toPOJO(queryResult, WorkloadPoint.class);
         Collections.reverse(workloadPoints);
         return workloadPoints;
-    }
-
-    public List<WorkloadJVMPoint> getLoadJVMMetrics() {
-        QueryResult queryResult = influxDB.query(new Query("select * from workload_jvm", dbName));
-        InfluxDBResultMapper resultMapper = new InfluxDBResultMapper();
-        return resultMapper.toPOJO(queryResult, WorkloadJVMPoint.class);
     }
 
     /**

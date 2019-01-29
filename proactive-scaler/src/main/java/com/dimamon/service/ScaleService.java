@@ -14,12 +14,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.OptionalDouble;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.dimamon.utils.StringUtils.showValue;
+import static com.dimamon.utils.StringUtils.showValues;
 
 
 /**
@@ -46,37 +45,75 @@ public class ScaleService {
     private PredictorService predictorService;
 
     @Autowired
-    private KubernetesService kubernetesService;
+    private KubernetesService kubService;
 
 
     @Scheduled(initialDelay = INITIAL_DELAY, fixedDelay = CHECK_EVERY)
     public void checkMetrics() {
         LOGGER.info("### Checking metrics task = {} | {}", new Date(), config.proactiveString());
-        kubernetesService.checkPods();
-        measurementsRepo.writePodCount(APP_NAME,
-                kubernetesService.getMetricsPodCount(), kubernetesService.getMetricsPodReadyCount());
+        kubService.checkPods();
+        Set<String> podNames = kubService.getPodNames();
 
-        List<Double> cpuMeasurements = measurementsRepo.getLastLoadMetrics(config.getForecastBasedOn())
-                .stream().map(WorkloadPoint::getPodCpu)
-                .collect(Collectors.toList());
-        OptionalDouble averageWorkload = cpuMeasurements.stream().mapToDouble(a -> a).average();
+        measurementsRepo.writePodsInfo(APP_NAME, kubService.getMetricsPodCount(),
+                kubService.getMetricsPodReadyCount(), podNames);
+
+        class PodMetrics {
+            private String podName;
+            private List<Double> metrics;
+
+            private PodMetrics(String podName, List<Double> metrics) {
+                this.podName = podName;
+                this.metrics = metrics;
+            }
+
+            @Override
+            public String toString() {
+                return "PodMetrics{" +
+                        "podName='" + podName + '\'' +
+                        ", metrics=" + showValues(metrics) +
+                        '}';
+            }
+        }
+
+        List<PodMetrics> podMetricsList = new ArrayList<>();
+        podNames.forEach(podName -> {
+            List<Double> lastPodCpu = measurementsRepo.getLastLoadMetrics(podName, config.getForecastBasedOn())
+                    .stream().map(WorkloadPoint::getPodCpu)
+                    .collect(Collectors.toList());
+            if (!lastPodCpu.isEmpty()) {
+                podMetricsList.add(new PodMetrics(podName, lastPodCpu));
+            }
+        });
+
+        LOGGER.info(" = = = POD METRICS = = = ");
+        podMetricsList.forEach(pm -> LOGGER.info(pm.toString()));
+        LOGGER.info(" = = = = = = = = = = = = ");
+
+        OptionalDouble avgWorkloadAllPodsOpt = podMetricsList.stream()
+                .flatMap(pm -> pm.metrics.stream())
+                .mapToDouble(a -> a).average();
+
+        if (avgWorkloadAllPodsOpt.isEmpty()) {
+            LOGGER.error("Can't write predictionForNow : average workload calculation error");
+            return;
+        }
+
+        double avgWorkloadAllPods = avgWorkloadAllPodsOpt.getAsDouble();
+        LOGGER.info("AVERAGE WORKLOAD ALL PODS = {}", showValue(avgWorkloadAllPods));
 
         if (config.isProactive()) {
-            if (averageWorkload.isPresent()) {
-                writePredictionStats(averageWorkload.getAsDouble());
-            } else {
-                LOGGER.error("Can't write predictionForNow : average workload calculation error");
-            }
-            double avgPrediction = predictorService.averagePrediction(config.getForecastFor(), cpuMeasurements);
+            writePredictionStats(avgWorkloadAllPods);
+
+            Set<Double> avgPredictions = podMetricsList.stream()
+                    .map(pm -> predictorService.averagePrediction(config.getForecastFor(), pm.metrics))
+                    .collect(Collectors.toSet());
+            double avgPrediction = avgPredictions.stream().mapToDouble(a -> a).average().getAsDouble();
+            LOGGER.info("AVERAGE PREDICTION FOR {} PODS = {}", podNames.size(), showValue(avgPrediction));
             measurementsRepo.writePrediction(APP_NAME, avgPrediction);
             scaleTask(avgPrediction);
 
         } else {
-            if (averageWorkload.isPresent()) {
-                scaleTask(averageWorkload.getAsDouble());
-            } else {
-                LOGGER.error("Can't calculate average and do scale task");
-            }
+            scaleTask(avgWorkloadAllPods);
         }
     }
 
@@ -85,7 +122,7 @@ public class ScaleService {
                 .getLastWorkloadPredictions(config.getPredictionForNow());
         if (lastPredictions.size() == config.getPredictionForNow()) {
             double predictionForNow = lastPredictions.get(0).getCpu();
-            LOGGER.info("Prediction stats. ESTIMATED={}, REAL={}", predictionForNow, averageWorkload);
+            LOGGER.info("Prediction stats. ESTIMATED={}, REAL={}", predictionForNow, showValue(averageWorkload));
             measurementsRepo.writeCurrentPrediction(APP_NAME, averageWorkload, predictionForNow);
         } else {
             LOGGER.error("Can't write predictionForNow : there no prediction for current moment");
@@ -110,10 +147,10 @@ public class ScaleService {
         boolean scaled = false;
         if (shouldScaleUp(averageResult)) {
             LOGGER.info("Avg result {}% > {}%", showValue(averageResult), config.getScaleUpTreshold());
-            scaled = kubernetesService.scaleUpService();
+            scaled = kubService.scaleUp();
         } else if (shouldScaleDown(averageResult)) {
             LOGGER.info("Avg result {}% < {}%", showValue(averageResult), config.getScaleDownTreshold());
-            scaled = kubernetesService.scaleDownService();
+            scaled = kubService.scaleDown();
         } else {
             LOGGER.info("Avg result {}%, no need to scale", showValue(averageResult));
         }

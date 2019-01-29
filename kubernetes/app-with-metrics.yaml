@@ -36,6 +36,7 @@ spec:
             path: /health
             port: 8081
           periodSeconds: 10
+          initialDelaySeconds: 30
         env:
         - name: JAVA_OPTS
           value: "-Xms300m -Xmx300m"

@@ -7,8 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -31,17 +32,18 @@ public class KubernetesServiceImpl implements KubernetesService {
 
     private int metricsPodCount;
     private int metricsPodReadyCount;
+    private Set<String> podNames = new HashSet<>();
 
     public void checkPods() {
         AtomicInteger podCount = new AtomicInteger();
         AtomicInteger podReadyCount = new AtomicInteger();
-        List<String> foundPods = new ArrayList<>();
+        Set<String> foundPods = new HashSet<>();
 
         try (final KubernetesClient client = new DefaultKubernetesClient()) {
             client.pods().list().getItems().forEach(pod -> {
                 if (pod.getMetadata().getNamespace().equals("default")) {
-                    if (pod.getMetadata().getName().startsWith(podPrefix)) {
-                        final String podName = pod.getMetadata().getName();
+                    final String podName = pod.getMetadata().getName();
+                    if (podName.startsWith(podPrefix)) {
                         List<ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
                         if (!containerStatuses.isEmpty() && containerStatuses.get(0).getReady()) {
                             podReadyCount.incrementAndGet();
@@ -57,13 +59,14 @@ public class KubernetesServiceImpl implements KubernetesService {
 
         this.metricsPodCount = podCount.get();
         this.metricsPodReadyCount = podReadyCount.get();
+        this.podNames = foundPods;
 
         LOGGER.info("There are {}(ready)/{}(all) {} pods = {}",
                 metricsPodReadyCount, metricsPodCount, podPrefix, foundPods.toString());
     }
 
     @Override
-    public boolean scaleUpService() {
+    public boolean scaleUp() {
         int scaleTo = metricsPodCount + 1;
         if (scaleTo > MAX_POD_COUNT) {
             LOGGER.warn("Can't scale more, limit is {}", MAX_POD_COUNT);
@@ -75,7 +78,7 @@ public class KubernetesServiceImpl implements KubernetesService {
     }
 
     @Override
-    public boolean scaleDownService() {
+    public boolean scaleDown() {
         int scaleTo = metricsPodCount - 1;
         if (scaleTo <= 0) {
             return false;
@@ -93,6 +96,11 @@ public class KubernetesServiceImpl implements KubernetesService {
     @Override
     public int getMetricsPodReadyCount() {
         return this.metricsPodReadyCount;
+    }
+
+    @Override
+    public Set<String> getPodNames() {
+        return this.podNames;
     }
 
     private void scaleDeployment(int replicas) {
